@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="before">
+                <field name="gender"
+                       attrs="{'invisible': ['|', ('company_type', '=', 'company'), ('type', '!=', 'contact')]}"/>
+            </xpath>
+            <field name="function" position="before">
+                <field name="dob" attrs="{'invisible': [('company_type', '=', 'company')]}"/>
+                <field name="age" invisible="1"/>
+            </field>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <label for="appointment_centre_ids" attrs="{'invisible': [('company_type', '=', 'person')]}"/>
+                <div class="o_row">
+                    <field name="appointment_centre_ids"
+                           widget="many2many_tags"
+                           attrs="{'invisible': [('company_type', '=', 'person')], 'required': [('company_type', '=', 'company')]}"/>
+                    <button string="Add All Test Center" type="object"
+                            name="update_all_test_center"
+                            attrs="{'invisible': [('company_type', '=', 'person')]}"
+                            class="oe_link oe_inline"/>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='misc']/field[@name='ref']" position="replace"/>
+            <field name="vat" position="after">
+                <field name="ref" attrs="{'required': [('company_type', '=', 'company')]}" string="Unique ID"/>
+            </field>
+        </field>
+    </record>
+</odoo>

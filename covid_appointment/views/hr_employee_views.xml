@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="employee_form_inherited_covid_appointment" model="ir.ui.view">
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+        	<field name="parent_id" position="after">
+        		<field name="appointment_type_id"/>
+        	</field>
+        </field>
+    </record>
+</odoo>

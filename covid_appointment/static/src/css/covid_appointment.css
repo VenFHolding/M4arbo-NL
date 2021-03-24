@@ -1,0 +1,13 @@
+.covid_question_table td{
+	border-top: none;
+}
+.search_appointment td{
+	vertical-align: middle;
+	border-top: none;
+}
+.contacts-image img{
+	max-width: 75px;
+}
+.covid {
+	border-left: 6px solid red;
+}

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_menu_child_contact" name="Portal layout : Child Contacts" inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'child_contact'" t-attf-class="breadcrumb-item #{'active ' if not contact else ''}">
+                <a t-if="contact" t-attf-href="/my/child/employees?{{ keep_query() }}">Employees</a>
+                <t t-else="">Employees</t>
+            </li>
+            <li t-if="page_name == 'child_contact' and contact" t-attf-class="breadcrumb-item #{'active ' if contact else ''}">
+                <t t-esc="contact.name"></t>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_covid" name="Portal My Home : Partner child entries" inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Employees</t>
+                <t t-set="url" t-value="'/my/child/employees'"/>
+                <t t-set="count" t-value="total_login_partner_child"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="child_employee_list" name="Login Partner's Child Employees">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Employees</t>
+            </t>
+            <div class="oe_structure container mb128" style="padding-left:1rem;">
+                <div class="row">
+                    <div class="col-3 list-group-item">
+                        <div id="filter_contacts">
+                            <form action="/my/child/employees" method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <h5>Filters</h5>
+
+                                <!-- Age Filter -->
+                                <h6 class="font-weight-bold">Age</h6>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="under25" name="contact_age_filter" value="0-25"
+                                    t-att-checked="filter_data.get('contact_age_filter') == '0-25'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="under25">Under 25</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="2535" name="contact_age_filter" value="25-35" t-att-checked="filter_data.get('contact_age_filter') == '25-35'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="2535">25 to 35</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="3545" name="contact_age_filter" value="35-45"
+                                    t-att-checked="filter_data.get('contact_age_filter') == '35-45'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="3545">35 to 45</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="4555" name="contact_age_filter" value="45-55"
+                                    t-att-checked="filter_data.get('contact_age_filter') == '45-55'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="4555">45 to 55</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="55above" name="contact_age_filter" value="55-100"
+                                    t-att-checked="filter_data.get('contact_age_filter') == '55-100'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="55above">55 &amp; Above</label>
+                                </div>
+                                <!-- Custom Age Filter -->
+                                <div class="d-flex align-items-center pb-1">
+                                    <div class="md-form md-outline my-0">
+                                        <input id="from" type="number" class="form-control mb-0" name="min_age"
+                                        t-att-value="filter_data.get('min_age')"/>
+                                        <label for="form">Min</label>
+                                    </div>
+                                    <p class="px-2 mb-0 text-muted"> - </p>
+                                    <div class="md-form md-outline my-0">
+                                        <input id="to" type="number" class="form-control mb-0" name="max_age" t-att-value="filter_data.get('max_age')"/>
+                                        <label for="to">Max</label>
+                                    </div>
+                                </div>
+
+                                <!-- Gender Filter -->
+                                <h6 class="font-weight-bold">Gender</h6>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="gender_male" name="gender_filter" value="male"
+                                    t-att-checked="filter_data.get('gender_filter') == 'male'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="gender_male">Male</label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input type="radio" class="form-check-input" id="gender_female" name="gender_filter" value="female"
+                                    t-att-checked="filter_data.get('gender_filter') == 'female'"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="gender_female">Female</label>
+                                </div>
+
+                                <!-- Covid Status Filter -->
+                                <h6 class="font-weight-bold mb-3">Covid Status</h6>
+                                <div class="form-check">
+                                    <input name="positive_check" type="checkbox" class="form-check-input filled-in" id="positive_check" t-att-checked="filter_data.get('positive_check')"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="positive_check">Positive</label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input name="negative_check" type="checkbox" class="form-check-input filled-in" id="negative_check" t-att-checked="filter_data.get('negative_check')"/>
+                                    <label class="form-check-label small text-uppercase card-link-secondary" for="negative_check">Negative</label>
+                                </div>
+
+                                <!-- Appointment Date Filter -->
+                                <h6 class="font-weight-bold mb-3">Appointment Date</h6>
+                                <div class="d-flex align-items-center pb-1">
+                                    <div class="md-form md-outline my-0" style="width:48%;">
+                                        <input id="app_date_from" type="date" class="form-control mb-0" name='app_date_from'
+                                        t-att-value="filter_data.get('app_date_from')"/>
+                                        <label for="app_date_from">Min</label>
+                                    </div>
+                                    <p class="px-2 mb-0 text-muted"> - </p>
+                                    <div class="md-form md-outline my-0" style="width:48%;">
+                                        <input id="app_date_to" type="date" class="form-control mb-0" name="app_date_to" t-att-value="filter_data.get('app_date_to')"/>
+                                        <label for="app_date_to">Max</label>
+                                    </div>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input name="rm_filters" type="checkbox" class="form-check-input filled-in" id="rm_filters"/>
+                                    <label class="form-check-label small card-link-secondary" for="rm_filters">Remove All Filters</label>
+                                </div>
+                                <button type="submit" name="apply_filters" class="btn btn-success">Apply</button> 
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-9">
+                        <div id="child_contact_div" class="row">
+                            <t t-foreach="child_contacts" t-as="contact">
+                                <div class="col-6 col-md-4">
+                                    <div t-attf-class="list-group-item #{'covid' if partner_covid_result.get(contact.id) else ''}" style="display: flex;padding: 0.75rem 0.75rem;">
+                                        <div style="font-size: smaller;width:100%;">
+                                            <strong>Name: </strong><span t-field="contact.name"/><br/>
+                                            <strong>Email: </strong><span t-field="contact.email"/><br/>
+                                            <strong>Phone: </strong><span t-if="contact.phone" t-field="contact.phone"/>
+                                            <span t-else="">NA</span><br/>
+                                            <strong>Age: </strong><span t-field="contact.age"/><br/>
+                                            <a t-attf-href="/view/covid_reports/{{contact.id}}" class="btn btn-primary btn-sm active" role="button" aria-pressed="true" style="float: right;">View Reports</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <div t-if="pager" class="mt-3 o_portal_pager text-center" style="margin:auto;">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="view_contact_covide_appointment" name="View Child Contact: Covid Appointments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title"><span t-esc="contact.name"/></t>
+            </t>
+            <div class="oe_structure container mb128">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Company Ref.</th>
+                        <th>Test Center</th>
+                        <th>Appointment Status</th>
+                        <th>Covid Status</th>
+                    </tr>
+                    <t t-if="calendar_event_data">
+                        <tr t-foreach="calendar_event_data" t-as="data">
+                            <td><t t-esc="data['date']"/></td>
+                            <td><t t-esc="data['company_ref']"/></td>
+                            <td><t t-esc="data['test_center']"/></td>
+                            <td><t t-esc="data['appointment_status']"/></td>
+                            <td>
+                                <t t-if="data['covid_status']" t-esc="data['covid_status']"/>
+                                <t t-else="">
+                                    --
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

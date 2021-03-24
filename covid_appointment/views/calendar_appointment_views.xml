@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="calendar_appointment_type_view_form_inherited_covid" model="ir.ui.view">
+        <field name="model">calendar.appointment.type</field>
+        <field name="inherit_id" ref="website_calendar.calendar_appointment_type_view_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//page[@name='schedule_availability']//separator" position="replace">
+        		<separator string="Medical Staff"/>
+        	</xpath>
+        	<xpath expr="//page[@name='schedule_availability']//field[@name='employee_ids']/tree/field[@name='name']" position="attributes">
+        		<attribute name="string">Medical Staff Name</attribute>
+        	</xpath>
+            <group name="left_details" position="inside">
+                <field name="user_id" options="{'no_create': True}" />
+            </group>
+            <field name="assignation_method" position="replace"/>
+        </field>
+    </record>
+
+    <record id="appointment_test_centre_action" model="ir.actions.act_window">
+        <field name="name">Covid Test Centres</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">calendar.appointment.type</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new test centre
+            </p><p>
+                Allow your customers to book an appointment on your website
+                by creating test centre here.
+            </p>
+        </field>
+    </record>
+</odoo>

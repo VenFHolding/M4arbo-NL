@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="menu_covid_appointment_history" model="website.menu">
+		<field name="name">Appointment History</field>
+		<field name="url">/covid/appointment/history</field>
+		<field name="parent_id" ref="website.main_menu"/>
+		<field name="sequence" type="int">55</field>
+	</record>
+</odoo>

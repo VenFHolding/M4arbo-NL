@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="email_template_covid_achieved_appointment" model="mail.template">
+            <field name="name">Not Achived Covid Test Appointment</field>
+            <field name="model_id" ref="calendar.model_calendar_attendee"/>
+            <field name="subject">Not Achived Covid Test Appointment at ${object.event_id.name}</field>
+            <field name="email_from">${(object.event_id.user_id.email_formatted or user.email_formatted or '') | safe}</field>
+            <field name="email_to">${('' if object.partner_id.email and object.partner_id.email == object.email else object.email) | safe}</field>
+            <field name="partner_to">${object.partner_id.id if object.partner_id.email and object.partner_id.email == object.email else False}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html" type="html">
+				<div style="margin: 0px; padding: 0px;">
+				    <p>
+        				Hello ${object.common_name},<br/><br/>
+        			</p>
+        			<div class="row">
+        				<div class="col-md-9">
+        					<p>
+        						Your Appointment has not been achieved for covid-19 test on ${object.event_id.start_datetime} at below address.
+        					</p>
+							<p>
+        						<b>Reason:</b><br/>
+        						${object.event_id.not_achived_reason}
+        					</p>
+        					<p>
+        						<b>Location:</b><br/>
+        						${object.event_id.Location}
+        					</p>
+        					<p>
+        						Please reschedule the appointment again.
+        					</p>
+        				</div>
+
+        			</div>
+			        <br/>
+				    Thank you,
+				    <br/>
+				</div>
+            </field>
+			<field name="auto_delete" eval="True"/>
+			<field name="user_signature" eval="False"/>
+        </record>
+	</data>
+</odoo>

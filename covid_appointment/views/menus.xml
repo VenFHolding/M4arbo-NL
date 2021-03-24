@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem name="Covid Appointments" id="main_menu_covid_appointments" parent="website.menu_website_configuration"/>
+
+    <!-- Menu item for calendar event -->
+    <menuitem id="calendar_event_menu" parent="main_menu_covid_appointments" action="calendar_event_action" name="Covid Appointments"/>
+
+    <menuitem name="Test Centre Configuaration" id="menu_covid_configuration" parent="main_menu_covid_appointments"/>
+
+    <!-- Menu for Test Centre -->
+    <menuitem name="Covid Test Centres" action="covid_appointment.appointment_test_centre_action" id="menu_test_centre" parent="menu_covid_configuration"/>
+
+    <!-- Menu for terms and conditions -->
+    <menuitem name="Terms &amp; Policy" action="appointment_policy_action" id="menu_action_policy" parent="menu_covid_configuration"/>
+
+    
+    <!-- Covid Report Menus -->
+    <menuitem name="Reports" id="menu_covid_report" parent="main_menu_covid_appointments"/>
+
+    <menuitem name="Total Appointments" action="appointment_report_action" id="menu_action_appointment_report" parent="menu_covid_report"/>
+
+    <menuitem name="Covid Test Report" action="covid_appointment_result_report_action" id="menu_action_covid_appointment_report" parent="menu_covid_report"/>
+</odoo>

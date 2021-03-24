@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+    id="calendar_event_label_report"
+    model="calendar.event"
+    string="Appointment Label"
+    report_type="qweb-pdf"
+    name="covid_appointment.report_calendar_event"
+    file="covid_appointment.report_calendar_event"
+    paperformat="covid_appointment.paperformat_calendar_event"/>
+    <!-- print_report_name="(object.get_report_base_filename())" -->
+</odoo>

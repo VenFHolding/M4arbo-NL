@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="appointment_slot_wizard_form_view" model="ir.ui.view">
+        <field name="model">appointment.slot.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Slot Time Configuration">
+                        <group>
+                            <field name="start_time"/>
+                            <field name="slot_duration" widget="float_time"/>
+
+                        </group>
+
+                    </group>
+
+
+                    <group string="Day Of Week">
+                        <group>
+                            <field name="flag_monday"/>
+                            <field name="flag_tuesday"/>
+                            <field name="flag_wednes"/>
+                            <field name="flag_thrus"/>
+                            <field name="flag_friday"/>
+                            <field name="flag_saturday"/>
+                            <field name="flag_sunday"/>
+                        </group>
+
+                    </group>
+                    <footer>
+                        <button type="object" name="submit_configuration" string="Submit" class="btn btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+</odoo>

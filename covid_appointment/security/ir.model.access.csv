@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_event_report,covid_appointments.event_report,model_event_report,,1,1,1,1
+access_calendar_event,calendar.calendar_event,model_calendar_event,,1,0,0,0
+access_appointment_report,covid_appointments.appointment_report,model_appointment_report,,1,1,1,1
+access_covid_appointment_report,covid_appointments.covid_appointment_result_report,model_covid_appointment_result_report,,1,1,1,1
+access_custom_website_policy,covid_appointments.custom_website_policy,model_custom_website_policy,,1,1,1,1
+access_online_appointment_type,access_online_appointment_type,model_calendar_appointment_type,covid_appointment.group_appointment_own_document,1,1,1,1

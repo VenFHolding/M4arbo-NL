@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_schedule_appointment_template">
+        <t t-call="web.basic_layout">
+            <div class="page">
+                <div class="text-center">
+                    <span style="font-size: smaller;display: inline-block;width: 50px;white-space: nowrap;overflow: hidden !important;text-overflow: ellipsis;" t-esc="doc.partner_ids[0].name"/>
+                    <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', doc.qr_code_string, 80, 80)"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_calendar_event">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="covid_appointment.report_schedule_appointment_template"/>
+            </t>
+        </t>
+    </template>
+</odoo>
