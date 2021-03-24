@@ -1,0 +1,91 @@
+<odoo>
+
+    <template id="search_appointment_template" name="Search Covid Appointment History Template">
+        <div class="oe_structure container view_covid_appoitment_history">
+            <div class="row" style="margin-top:15px;">
+                <div class="col-12">
+                    <h5 class="o_page_header">
+                        Search Appointments
+                    </h5>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-9">
+                    <form action="/covid/appointment/view_history" method="post">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <table class="table search_appointment">
+                            <tr>
+                                <td><strong>Company Ref No. *</strong></td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" name="company_ref" id="company_ref" required="required"/>
+                                </td>
+                                <td><strong>Email *</strong></td>
+                                <td>
+                                    <input type="email" class="form-control form-control-sm" name="email" id="email"
+                                    required="required"/>
+                                </td>
+                                <td>
+                                    <button id="search_history" type="submit" name="search_history" class="btn btn-primary">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+
+            <div t-if="error_msg" id="error_message_section" class="row">
+                <div class="col-8">
+                    <div class="alert alert-danger" role="alert">
+                        <p id="error_message" t-esc="error_msg"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+
+    <template id="search_covid_appointment_layout" name="Search Covid Appointment History">
+        <t t-call="website.layout">
+            <t t-call="covid_appointment.search_appointment_template"/>
+        </t>
+    </template>
+
+    <template id="covid_appointment_history_data_template" name="Covid Appointment History Data">
+        <t t-call="website.layout">
+            <t t-call="covid_appointment.search_appointment_template"/>
+            <div class="oe_structure container mb128">
+                <div id="search_result" class="row">
+                    <div class="col-12">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date &amp; Time</th>
+                                    <th>Name</th>
+                                    <th>Company Ref.</th>
+                                    <th>Test Center</th>
+                                    <th>Appointment Status</th>
+                                    <th>Covid Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="calendar_event_data" t-as="data">
+                                    <td><t t-esc="data['date']"/></td>
+                                    <td><t t-esc="data['partner_name']"/></td>
+                                    <td><t t-esc="data['company_ref']"/></td>
+                                    <td><t t-esc="data['test_center']"/></td>
+                                    <td><t t-esc="data['appointment_status']"/></td>
+                                    <td>
+                                        <t t-if="data['covid_status']" t-esc="data['covid_status']"/>
+                                        <t t-else="">
+                                            --
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

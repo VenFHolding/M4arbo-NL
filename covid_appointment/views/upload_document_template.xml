@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="upload_covid_document" name="Website Covid Appointment: Upload Result">
+        <t t-call="website.layout">
+            <div class="oe_structure view_update_covid_status container mb128">
+                <div class="row">
+                    <div class="col-md-7">
+                        <h2>Scanned Appointment Details:</h2>
+                        <table class="table">
+                            <tr>
+                                <td style="width:35%"><b>Test Center:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.appointment_type_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><b>Appointment Date &amp; Time:</b></td>
+                                <td><p t-field="event_rec.start_datetime"/></td>
+                            </tr>
+                            <tr>
+                                <td><b>Other Details:</b></td>
+                                <td><p t-field="event_rec.description"/></td>
+                            </tr>
+                        </table>
+                        <div class="row">
+                            <div t-if="not event_rec.is_label_printed" class="col-4">
+                                <button id="cancel_appointment" class="btn btn-danger btn-block" name="cancel_appointment" data-toggle="modal" data-target="#cancel_reason_modal"><i class="fa fa-close mr-1"></i>Cancel Appointment</button>
+                            </div>
+                            <div t-if="is_internal_user" class="col-4">
+                                <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print"><i class="fa fa-print"/> Print Label</a>
+                            </div>                            
+                            <div t-if="is_internal_user and event_rec.is_label_printed" class="col-4 text-right">
+                                <button id="fill_details" class="btn btn-primary btn-block" name="fill_report_details" data-toggle="modal" data-target="#fill_covid_report_modal"><i class="fa fa-tasks"></i> Fill Data</button>
+                            </div>
+                        </div>
+
+                        <!-- Form for cancel the event. -->
+                        <div class="modal fade formwizardpopup" id="cancel_reason_modal" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content banner">
+                                    <div class="modal-body">
+                                        <form method="POST" t-att-action="'/calender/event/cancel/%s' % event_rec.id">
+                                            <button type="button" class="close" data-dismiss="modal" style="color: #000;opacity: 0.2;"><i class="fa fa-close"/></button>
+                                            <div class="form_wizard" id="myWizard">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <textarea rows="5" name="cancel_reason" class="form-control" placeholder="Please specify the cancel appointment reason" style="resize: none;" required="required"/>
+                                                    </div>
+                                                    <div class="col-12 mt-3">
+                                                        <button class="btn btn-primary" type="submit">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form for fill patient data. -->
+                        <div class="modal fade formwizardpopup" id="fill_covid_report_modal" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content banner">
+                                    <div class="modal-header" style="background-color: lightgray;color:#000000;font-size: smaller;">
+                                        <div class="row" style="width: 95%;">
+                                            <div class="col-6">
+                                                <strong>Company Ref:  </strong><span t-esc="event_rec.partner_ids[0].parent_id.name"/><br/>
+                                                <strong>Patient Name:  </strong><span t-esc="event_rec.partner_ids[0].name"/>
+                                                <br/>
+                                                <strong>Patient Email:  </strong><span t-esc="event_rec.partner_ids[0].email"/>
+                                            </div>
+                                            <div class="col-6 text-right">
+                                                <strong>Date &amp; Time:  </strong><span t-field="event_rec.start_datetime"/><br/>
+                                                <strong>Test Centre:  </strong><span t-esc="event_rec.appointment_type_id.name"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="button" class="close" data-dismiss="modal" style="color: #000;opacity: 0.2;"><i class="fa fa-close"/></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" t-att-action="'/calender/event/post_covid_data/%s' % event_rec.id">
+                                            <div class="form_wizard" id="myWizard">
+                                                <table class="table covid_question_table">
+                                                    <tr>
+                                                        <td>
+                                                            <strong>1). Patient covid test is achived or not?</strong>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="is_achived" id="is_test_achived_yes" value="yes"/>
+                                                                <label class="form-check-label" for="is_test_achived_yes">Yes</label>
+                                                            </div>
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="is_achived" id="is_test_achived_no" value="no"/>
+                                                                <label class="form-check-label" for="is_test_achived_no">No</label>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="not_achived_reason">
+                                                        <td>
+                                                            <textarea rows="5" name="not_achived_reason" class="form-control" placeholder="Please specify the not achived reason" style="resize: none;"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="check_postive">
+                                                        <td>
+                                                            <strong>2). Is Patient is covid positive?</strong>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="check_postive">
+                                                        <td>
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="is_positive" id="is_covid_positive_yes" value="yes"/>
+                                                                <label class="form-check-label" for="is_covid_positive_yes">Yes</label>
+                                                            </div>
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="is_positive" id="is_covid_positive_no" value="no"/>
+                                                                <label class="form-check-label" for="is_covid_positive_no">No</label>
+                                                            </div>
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="is_positive" id="is_covid_test_failed" value="failed"/>
+                                                                <label class="form-check-label" for="is_covid_test_failed">Test Failed</label>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="test_failed_reason">
+                                                        <td>
+                                                            <textarea rows="5" name="test_failed_reason" class="form-control" placeholder="Please specify the test failed reason" style="resize: none;"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <button class="btn btn-primary" type="submit">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="display_covid_report_template" name="Website Covid Appointment: Display Report">
+        <t t-call="website.layout">
+            <div class="oe_structure container mb128">
+                <div t-if="event_rec" class="row">
+                    <div class="col-md-7">
+                        <h2>Scanned Appointment Details:</h2>
+                        <table class="table">
+                            <tr>
+                                <td style="width:35%"><b>Test Center:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.appointment_type_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><b>Appointment Date &amp; Time:</b></td>
+                                <td><p t-field="event_rec.start_datetime"/></td>
+                            </tr>
+                            <tr>
+                                <td><b>Other Details:</b></td>
+                                <td><p t-field="event_rec.description"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div t-att-class="'alert alert-danger' if covid_status == 'positive' else 'alert alert-dark' if not covid_status else 'alert alert-success'" role="alert">
+                            <p><strong t-esc="message"/></p>
+                            <p t-if="reason"><strong>Reason: </strong><t t-esc="event_rec.not_achived_reason"/></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

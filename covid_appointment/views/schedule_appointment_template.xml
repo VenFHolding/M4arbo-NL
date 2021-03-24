@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="inherit_appointment_template" name="Website Appointment:Custom Appointment Page"
+              inherit_id="website_calendar.index">
+        <xpath expr="//div[@id='appointment']" position="before">
+            <div id="company_reference" class="form-group row">
+                <label for="company_ref" class="col-md-3 col-form-label">Company ID</label>
+                <div class="col-md-9">
+                    <input type="text" name="company_ref" required="1" class="form-control" id="company_ref"/>
+                    <div id="error_message_section" class="text-danger" role="alert">
+                        Invalid Company Reference.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//label[@for='calendarType']" position="replace">
+            <label for="calendarType" class="col-md-3 col-form-label">Test Centre</label>
+        </xpath>
+    </template>
+</odoo>

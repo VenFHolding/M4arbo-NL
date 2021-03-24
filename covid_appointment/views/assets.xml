@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_frontend" name="Covid Document Upload Assets" inherit_id="web.assets_frontend">
+        <xpath expr="." position="inside">
+        	<link rel="stylesheet" href="/covid_appointment/static/src/css/covid_appointment.css"/>
+            <script type="text/javascript" src="/covid_appointment/static/src/js/upload_document.js"></script>
+            <script type="text/javascript" src="/covid_appointment/static/src/js/load_schedule_appointment.js"></script>
+            <script type="text/javascript" src="/covid_appointment/static/src/js/appointment_history.js"></script>
+            <script type="text/javascript" src="/covid_appointment/static/src/js/website_calendar_form.js"></script>
+        </xpath>
+    </template>
+</odoo>

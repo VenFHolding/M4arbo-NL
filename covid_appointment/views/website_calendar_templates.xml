@@ -1,0 +1,68 @@
+<odoo>
+    <!-- Added new input fields on create a online appointment. -->
+    <template inherit_id="website_calendar.appointment_form" id="inherited_appointment_form">
+        <xpath expr="//form" position="before">
+            <div t-if="error_msg" class="alert alert-danger" role="alert">
+                <p>
+                    <strong t-esc="error_msg"/>
+                </p>
+            </div>
+        </xpath>
+        <xpath expr="//label[@for='name']/.." position="before">
+            <div t-if="ref_partner_ref">
+                <div class="form-group row col-xl-8">
+                    <label for="company_ref" class="col-md-4 col-form-label">Company Reference</label>
+                    <div class="col-md-8">
+                        <input type="char" class="form-control" name="company_ref"
+                               t-att-value="ref_partner_ref" readonly="readonly"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//select[@name='country_id']" position="replace">
+            <select name="country_id" class="form-control" required="1" id="country_field">
+                <t t-foreach="countries or []" t-as="country">
+                    <option t-att-value="country.id" t-att-data-phone-code="country.phone_code and ('+'+str(country.phone_code)+' ') or None" t-att-selected="country.code == 'NL'"><t t-esc="country.name"/></option>
+                </t>
+            </select>
+        </xpath>
+        <xpath expr="//form//label[@for='phone']/.." position="after">
+            <div class="form-group row col-xl-8">
+                <label for="gender" class="col-md-4 col-form-label">Gender</label>
+                <div class="col-md-8">
+                    <select name="gender" class="form-control" required="1">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row col-xl-8">
+                <label for="dob_datepicker" class="col-md-4 col-form-label">Date of Birth</label>
+                <div class="col-md-8">
+                    <input id="dob_datepicker_calendar_form" name="dob_datepicker" type="date" class="form-control o_website_form_input o_website_form_date" required="1"/>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-foreach='appointment_type.question_ids']" position="after">
+            <div class="form-group row col-xl-8">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Conditions" id="flexCheckChecked" required="1" name="Terms"/>
+                        <label class="form-check-label" for="flexCheckChecked">
+                            "I have read and agree to the following"
+                            <a target="_blank" href="/website/covid/policy" rel="nofollow noopener ugc">Terms and Policy
+                            </a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+
+    <!-- Removed the Cancel appoitment button from the base template. -->
+    <template id="appointment_validated_inherited_covid" inherit_id="website_calendar.appointment_validated">
+        <xpath expr="//a[@t-attf-href='/website/calendar/cancel/#{event.access_token}']" position="replace"/>
+    </template>
+</odoo>

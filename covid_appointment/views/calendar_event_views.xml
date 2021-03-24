@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherited Calendar Event form view -->
+	<record id="view_calendar_event_form_inherited" model="ir.ui.view">
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="priority" eval="10"/>
+        <field name="arch" type="xml">
+            <field name="state" position="replace"/>
+        	<xpath expr="//sheet" position="before">
+        		<header>
+                    <button type="object" name="mark_done" string="Mark as Done" class="btn btn-primary" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
+                    <button type="object" name="mark_cancel" string="Cancel" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
+                    <button type="object" name="mark_not_achieved" string="Not Achieved" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
+        			<field name="state" widget="statusbar"/>
+        		</header>
+        	</xpath>
+            <xpath expr="//page[@name='page_details']" position="inside">
+                <group>
+                    <field name='employee_id' domain="[('appointment_type_id', '=', appointment_type_id)]" attrs="{'invisible': [('appointment_type_id', '=', False)]}" options="{'no_create': True}"/>
+                    <field name='is_qr_valid' invisible="1"/>
+                    <field name='qr_code_string'/>
+                </group>
+            </xpath>
+            <xpath expr="//sheet/*" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button class="oe_stat_button" name="button_event_reports"
+                            string="Reports" type="object"
+                            icon="fa-bars"/>
+                </div>
+            </xpath>
+            <field name="active" position="after">
+                <div class="oe_title" attrs="{'invisible': [('event_name', '=', False)]}">
+                    <h1>
+                        <field name="event_name" readonly="1"/>
+                    </h1>
+                </div>
+            </field>
+        </field>
+    </record>
+
+    <!-- Calendar Events : Tree View  -->
+    <record id="calendar_event_tree_view" model="ir.ui.view">
+        <field name="name">calendar.event.tree</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <tree string="Meetings" decoration-bf="message_needaction==True">
+                <field name="name" string="Subject"/>
+                <field name="allday" invisible="True"/>
+                <field name="start" string="Start Date"/>
+                <field name="stop" string="End Date"/>
+                <field name="partner_ids"/>
+                <field name="location"/>
+                <field name="state" invisible="True"/>
+                <field name="duration" widget="float_time"/>
+                <field name="message_needaction" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_calendar_event_search_inherited_covid" model="ir.ui.view">
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='responsible']" position="after">
+                <filter string="Online Appointment" name="appointment" domain="[]" context="{'group_by': 'appointment_type_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="calendar_event_action" model="ir.actions.act_window">
+        <field name="name">Appointments</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('appointment_type_id', '!=', False)]</field>
+        <field name="context">{'search_default_appointment':1}</field>
+    </record>
+</odoo>
