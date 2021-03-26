@@ -4,6 +4,18 @@
         <field name="model">calendar.appointment.type</field>
         <field name="inherit_id" ref="website_calendar.calendar_appointment_type_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//label[@for='min_schedule_hours']" position="attributes">
+                <attribute name="string">Schedule Appointment*</attribute>
+            </xpath>
+            <xpath expr="//label[@for='appointment_duration']" position="attributes">
+                <attribute name="string">Appointment Duration*</attribute>
+            </xpath>
+            <xpath expr="//label[@for='min_cancellation_hours']" position="attributes">
+                <attribute name="string">Allow Cancelling *</attribute>
+            </xpath>
+            <field name="appointment_tz" position="attributes">
+                <attribute name="string">Timezone *</attribute>
+            </field>
         	<xpath expr="//page[@name='schedule_availability']//separator" position="replace">
         		<separator string="Medical Staff"/>
         	</xpath>

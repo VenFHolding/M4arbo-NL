@@ -26,7 +26,8 @@
             </xpath>
             <xpath expr="//group[@name='misc']/field[@name='ref']" position="replace"/>
             <field name="vat" position="after">
-                <field name="ref" attrs="{'required': [('company_type', '=', 'company')]}" string="Unique ID"/>
+                <field name="restrict_country_ids" attrs="{'invisible': [('company_type', '!=', 'company')]}" widget="many2many_tags"/>
+                <field name="ref" attrs="{'required': [('company_type', '=', 'company')]}" string="Unique ID *"/>
             </field>
         </field>
     </record>

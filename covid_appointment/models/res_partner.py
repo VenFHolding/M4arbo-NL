@@ -42,7 +42,8 @@ class InheritPartner(models.Model):
                                ('other', 'Other')], string="Gender", placeholder="Gender")
     dob = fields.Date(string="Date of Birth")
     age = fields.Integer(string="Age", compute="calculate_age", store=True)
-    appointment_centre_ids = fields.Many2many('calendar.appointment.type', string='Select Test Centre')
+    appointment_centre_ids = fields.Many2many('calendar.appointment.type', string='Select Test Centre *')
+    restrict_country_ids = fields.Many2many('res.country', string="Restrict Countries")
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """

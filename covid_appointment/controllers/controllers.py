@@ -6,12 +6,16 @@ from pytz import timezone
 
 from odoo.addons.website_calendar.controllers.main import WebsiteCalendar  # Import the class
 from odoo.addons.portal.controllers.portal import CustomerPortal
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as dtf
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as dtf, email_split
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from odoo.tools.misc import get_lang
 
+def extract_email(email):
+    """ extract the email address from a user-friendly email address """
+    addresses = email_split(email)
+    return addresses[0] if addresses else ''
 
 class DownloadReport(CustomerPortal):
 
@@ -322,24 +326,27 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
 
         if not Partner:
             company_id = request.env['res.company'].search([], limit=1).id
+            country_id = int(country_id) if country_id else None
+            Partner = request.env['res.partner'].sudo().create({
+                'name': name,
+                'country_id': country_id,
+                'mobile': phone,
+                'email': email,
+                'gender': kwargs.get('gender'),
+                'dob': kwargs.get('dob_datepicker'),
+                'parent_id': partner_company_ref.id,
+            })
+            group_portal = request.env.ref('base.group_portal')
             user_rec = request.env['res.users'].sudo().with_context(no_reset_password=True)._create_user_from_template({
                 'email': extract_email(email),
                 'login': extract_email(email),
                 'company_id': company_id,
                 'company_ids': [(6, 0, [company_id])],
+                'partner_id': Partner.id,
             })
             user_rec.sudo().write({'active': True, 'groups_id': [(4, group_portal.id)]})
             user_rec.partner_id.signup_prepare()
-            country_id = int(country_id) if country_id else None
-            user_rec.partner_id.sudo().write({
-                'name': name,
-                'country_id': country_id,
-                'dob': kwargs.get('dob_datepicker'),
-                'parent_id': partner_company_ref.id,
-                'gender': kwargs.get('gender'),
-                'mobile': phone,
-            })
-            Partner = user_rec.partner_id
+            user_rec.action_reset_password()
 
         # check availability of the employee again (in case someone else booked while the client was entering the form)
         Employee = request.env['hr.employee'].sudo().browse(int(employee_id))
@@ -401,6 +408,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             partner_data = request.env.user.partner_id.read(fields=['name', 'mobile', 'country_id', 'email'])[0]
         day_name = format_datetime(datetime.strptime(date_time, dtf), 'EEE', locale=get_lang(request.env).code)
         date_formated = format_datetime(datetime.strptime(date_time, dtf), locale=get_lang(request.env).code)
+        countries_recs = request.env['res.country'].search([])
         template_data = {
             'partner_data': partner_data,
             'appointment_type': appointment_type,
@@ -408,7 +416,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             'datetime_locale': day_name + ' ' + date_formated,
             'datetime_str': date_time,
             'employee_id': employee_id,
-            'countries': request.env['res.country'].search([]),
+            'countries': countries_recs,
         }
         if request.session.get('event_error_message'):
             template_data.update({
@@ -417,8 +425,11 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             request.session.pop('event_error_message')
         if request.session.get('partner_id'):
             company_ref_id = request.env['res.partner'].sudo().search([('ref', '=', request.session.get('partner_id'))], limit=1)
+            if company_ref_id.restrict_country_ids:
+                countries_recs = company_ref_id.restrict_country_ids
             template_data.update({
                 'ref_partner_ref': company_ref_id.ref,
+                'countries': countries_recs,
             })
         return request.render("website_calendar.appointment_form", template_data)
 
