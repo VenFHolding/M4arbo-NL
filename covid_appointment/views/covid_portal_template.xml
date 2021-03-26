@@ -14,10 +14,15 @@
 
     <template id="portal_my_home_covid" name="Portal My Home : Partner child entries" inherit_id="portal.portal_my_home" priority="25">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
-            <t t-call="portal.portal_docs_entry">
+            <t t-if="total_login_partner_child" t-call="portal.portal_docs_entry">
                 <t t-set="title">Employees</t>
                 <t t-set="url" t-value="'/my/child/employees'"/>
                 <t t-set="count" t-value="total_login_partner_child"/>
+            </t>
+            <t t-if="total_covid_appointments" t-call="portal.portal_docs_entry">
+                <t t-set="title">Covid Appointments</t>
+                <t t-set="url" t-value="'/my/covid_appointments'"/>
+                <t t-set="count" t-value="total_covid_appointments"/>
             </t>
         </xpath>
     </template>
@@ -148,7 +153,7 @@
         </t>
     </template>
 
-    <template id="view_contact_covide_appointment" name="View Child Contact: Covid Appointments">
+    <template id="view_contact_covide_appointment" name="Covid Appointments">
         <t t-call="portal.portal_layout">
             <t t-set="breadcrumbs_searchbar" t-value="True"/>
             <t t-call="portal.portal_searchbar">
@@ -162,6 +167,7 @@
                         <th>Test Center</th>
                         <th>Appointment Status</th>
                         <th>Covid Status</th>
+                        <th></th>
                     </tr>
                     <t t-if="calendar_event_data">
                         <tr t-foreach="calendar_event_data" t-as="data">
@@ -175,6 +181,7 @@
                                     --
                                 </t>
                             </td>
+                            <td><a t-attf-href="{{data['link']}}"><i class="fa fa-external-link"></i></a></td>
                         </tr>
                     </t>
                 </table>

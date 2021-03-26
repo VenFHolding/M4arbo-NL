@@ -9,14 +9,49 @@ from odoo.addons.portal.controllers.portal import CustomerPortal, pager as porta
 class CustomerPortal(CustomerPortal):
 
     def _prepare_home_portal_values(self):
+        """
+            Override this method to display count of total child contacts
+            of login user.
+        """
         values = super(CustomerPortal, self)._prepare_home_portal_values()
         partner = request.env.user.partner_id
         total_login_partner_child = len(partner.child_ids.filtered(
             lambda contact: contact.type == 'contact'))
+        total_covid_appointments = request.env['calendar.event'].search_count(
+            [('partner_ids', 'in', partner.ids)])
         values.update({
-            'total_login_partner_child': total_login_partner_child
+            'total_login_partner_child': total_login_partner_child,
+            'total_covid_appointments': total_covid_appointments
         })
         return values
+
+    @http.route(['/my/covid_appointments', '/my/covid_appointments/page/<int:page>'], type='http', auth="user", website=True)
+    def portal_my_covid_appointments(self, page=1, **kw):
+        calendar_event_data = []
+        calendar_event = request.env['calendar.event'].sudo()
+        partner = request.env.user.partner_id
+        calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
+        for event_rec in calendar_event_recs:
+            event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+            event_data = {
+                'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
+                'test_center': event_rec.appointment_type_id.name,
+                'partner_name': event_rec.partner_ids[0].name,
+                'company_ref': event_rec.partner_ids[0].parent_id.name,
+                'appointment_status': dict(event_rec._fields['state'].selection).get(event_rec.state),
+                'covid_status': False,
+                'link': event_rec.qr_code_string,
+            }
+            if event_rec.state == 'done' and event_rec.event_report_ids:
+                event_data.update({
+                    'covid_status': event_rec.event_report_ids[0].state.capitalize()
+                })
+            calendar_event_data.append(event_data)
+        values = {
+            'contact': partner,
+            'calendar_event_data': calendar_event_data,
+        }
+        return http.request.render('covid_appointment.view_contact_covide_appointment', values)
 
     @http.route(['/my/child/employees', '/my/child/employees/page/<int:page>'], type='http', auth="user", website=True)
     def portal_my_child_employees(self, page=1, name=None, sortby=None, **kw):
@@ -225,6 +260,7 @@ class CustomerPortal(CustomerPortal):
                 'company_ref': event_rec.partner_ids[0].parent_id.name,
                 'appointment_status': dict(event_rec._fields['state'].selection).get(event_rec.state),
                 'covid_status': False,
+                'link': event_rec.qr_code_string,
             }
             if event_rec.state == 'done' and event_rec.event_report_ids:
                 event_data.update({
