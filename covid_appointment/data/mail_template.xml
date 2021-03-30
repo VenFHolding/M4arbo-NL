@@ -11,34 +11,28 @@
             <field name="lang">${object.partner_id.lang}</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    <p>
-                        Hello ${object.common_name},<br/><br/>
-                    </p>
                     <div class="row">
-                        <div class="col-md-9">
-                            <p>
-                                Your Appointment has been made for covid-19 test on ${ctx.get('start_datetime')}
-                                % if object.event_id.location:
-                                    <span> at below address</span>.
-                                % endif
-                            </p>
-                            % if (object.event_id.location):
-                            <p>
-                                <b>Location:</b><br/>
-                                ${object.event_id.location}
-                            </p>
-                            % endif
-                            <p>
-                                Please be availble on time.
-                            </p>
+                        <div class="col-8" style="border-right:1px solid #cccccc">
+                            <p>${object.common_name}</p>
+                            <h4>Your covid appointment has been scheduled at ${object.event_id.location}</h4><br/>
+                            <h4 class="text-muted">Schedule Date &amp; Time: ${ctx.get('start_datetime')}</h4><br/>
+                            <a role="button" class="btn btn-primary btn-block" href="${ctx.get('google_url')}">
+                              <i class="fa fa-fw fa-arrow-right"></i>Add to Google Calendar
+                            </a>
+                            <a role="button" class="btn btn-block btn-primary" href="${ctx.get('outlook_url')}">
+                                <i class="fa fa-fw fa-arrow-right"></i>Add to iCal/Outlook
+                            </a>
+                            <a role="button" class="btn btn-block btn-danger" href="${ctx.get('cancel_url')}">
+                                Cancel / Reschedule
+                            </a>
                         </div>
-                        <div class="col-md-3">
-                            <img class="barcode" src="${base_url}/report/barcode?type=QR&amp;value=${object.event_id.qr_code_string}&amp;width=150&amp;height=130&amp;"/>
+                        <div class="col-4">
+                            <p class="text-muted text-justified">
+                                Get the mobile app by opening the camera on your phone, and scanning the QR code:
+                            </p>
+                            <img class="barcode text-center" style="margin-left: auto;margin-right: auto;display: block;" src="${base_url}/report/barcode?type=QR&amp;value=${object.event_id.qr_code_string}&amp;width=100&amp;height=100&amp;"/>
                         </div>
                     </div>
-                    <br/>
-                    Thank you,
-                    <br/>
                 </div>
             </field>
             <field name="auto_delete" eval="True"/>
