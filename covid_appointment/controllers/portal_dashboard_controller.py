@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import json
 from odoo import http, _
-from odoo.http import request
+from odoo.http import content_disposition, request
 from pytz import timezone
 from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
+from odoo.addons.web.controllers.main import _serialize_exception
+from odoo.tools import html_escape
 
 
 class CustomerPortal(CustomerPortal):
@@ -24,6 +27,28 @@ class CustomerPortal(CustomerPortal):
             'total_covid_appointments': total_covid_appointments
         })
         return values
+
+    @http.route(['/covid_report/download/excel/<model("res.partner"):partner>'], type='http', auth="user", website=True)
+    def download_xlsx_covid_report(self, partner, **kw):
+        xlsx_data = partner.get_xlsx_report()
+        report_name = "covid_report"
+        try:
+            response = request.make_response(
+                        xlsx_data,
+                        headers=[('Content-Type', 'application/vnd.ms-excel'), ('Content-Disposition', content_disposition(report_name + '.xlsx'))
+                        ]
+                    )
+            return response
+
+        except Exception as e:
+            se = _serialize_exception(e)
+            error = {
+                'code': 200,
+                'message': 'Odoo Server Error',
+                'data': se
+            }
+            return request.make_response(html_escape(json.dumps(error)))
+
 
     @http.route(['/my/covid_appointments', '/my/covid_appointments/page/<int:page>'], type='http', auth="user", website=True)
     def portal_my_covid_appointments(self, page=1, **kw):
@@ -243,6 +268,7 @@ class CustomerPortal(CustomerPortal):
             'partner_covid_result': dict(partner_covid_result),
             'sortby': sortby,
             'filter_data': filter_data,
+            'partner_id': partner.id,
         }
         return http.request.render('covid_appointment.child_employee_list', values)
 

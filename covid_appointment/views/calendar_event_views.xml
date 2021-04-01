@@ -36,6 +36,9 @@
                     </h1>
                 </div>
             </field>
+            <field name="location" position="after">
+                <field name="is_label_printed" string="Patient Arrived"/>
+            </field>
         </field>
     </record>
 

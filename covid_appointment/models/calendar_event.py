@@ -5,6 +5,21 @@ from odoo import api, fields, models, _
 class CalendarEvent(models.Model):
     _inherit = "calendar.event"
 
+    def action_send_mail_with_qr(self):
+        email_values = {
+            'model': None,  # We don't want to have the mail in the tchatter while in queue!
+            'res_id': None,
+        }
+        mail_template = self.env.ref('covid_appointment.email_template_testing_qr_code_image')
+        event_rec = self.search([], order='id desc', limit=1)
+        rendering_context = {
+            'qr_code_string': event_rec.qr_code_string,
+        }
+        mail_template = mail_template.with_context(rendering_context)
+        mail_template.send_mail(event_rec.attendee_ids[0].id, email_values=email_values,
+                                notif_layout='mail.mail_notification_light')
+
+
     def _cron_execute_archive_event(self):
         """
             This method is called from scheduler to make invalid the QR code.

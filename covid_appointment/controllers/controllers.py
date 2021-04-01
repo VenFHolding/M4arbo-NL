@@ -174,9 +174,7 @@ class CovidAppointments(http.Controller):
 
         if res_user.has_group('base.group_portal'):
             cancelled_by = 'customer'
-            attendee = event.attendee_ids.filtered(
-                lambda atd: atd.partner_id.id != atd.event_id.user_id.partner_id.id)
-            user_name = str(attendee.partner_id.name)
+            user_name = str(event.sudo().attendee_ids[0].partner_id.name)
 
         if res_user.has_group('base.group_user'):
             cancelled_by = 'company'
@@ -259,7 +257,7 @@ class CovidAppointments(http.Controller):
             lambda app: app.is_published)
         
         is_test_center_user = False
-        if user_rec.has_group('base.group_user') and user_rec.has_group('covid_appointment.group_appointment_own_document'):
+        if user_rec.has_group('base.group_user') and not user_rec.has_group('website_calendar.group_calendar_manager'):
             is_test_center_user = True
 
         if is_test_center_user:
@@ -441,8 +439,8 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
         """
             Override this controller to display company details on calendar event form.
         """
+        company_ref_ids = request.env['res.partner'].sudo().search([('appointment_centre_ids', '!=', False)])
         if not appointment_type:
-            company_ref_ids = request.env['res.partner'].sudo().search([('appointment_centre_ids', '!=', False)])
             country_code = request.session.geoip and request.session.geoip.get('country_code')
             if country_code:
                 suggested_appointment_types = request.env['calendar.appointment.type'].search([

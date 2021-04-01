@@ -7,13 +7,14 @@
                 <sheet>
                     <group string="Slot Time Configuration">
                         <group>
-                            <field name="start_time"/>
+                            <field name="start_time" widget="float_time"/>
                             <field name="slot_duration" widget="float_time"/>
-
                         </group>
-
+                        <group>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="remove_old_slots"/>
+                        </group>
                     </group>
-
 
                     <group string="Day Of Week">
                         <group>
@@ -25,8 +26,8 @@
                             <field name="flag_saturday"/>
                             <field name="flag_sunday"/>
                         </group>
-
                     </group>
+
                     <footer>
                         <button type="object" name="submit_configuration" string="Submit" class="btn btn-primary"/>
                         <button special="cancel" string="Cancel" class="btn-secondary"/>
