@@ -10,7 +10,6 @@ class Attendee(models.Model):
 
     _inherit = 'calendar.attendee'
 
-
     def _send_mail_to_attendees(self, template_xmlid, force_send=False, force_event_id=None):
         if not self.mapped('event_id').appointment_type_id:
             return super(Attendee, self)._send_mail_to_attendees(

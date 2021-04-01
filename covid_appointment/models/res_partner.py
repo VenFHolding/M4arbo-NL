@@ -1,5 +1,7 @@
+import io
 from odoo import api, fields, models
 from datetime import datetime, timedelta
+from odoo.tools.misc import xlsxwriter
 
 
 class InheritPartner(models.Model):
@@ -43,7 +45,9 @@ class InheritPartner(models.Model):
     dob = fields.Date(string="Date of Birth")
     age = fields.Integer(string="Age", compute="calculate_age", store=True)
     appointment_centre_ids = fields.Many2many('calendar.appointment.type', string='Select Test Centre *')
-    restrict_country_ids = fields.Many2many('res.country', string="Restrict Countries")
+    restrict_country_ids = fields.Many2many(
+        'res.country', string="Restrict Countries",
+        help="Keep empty to display all countries on create appointment, otherwise you display selected countries.")
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """
@@ -72,3 +76,55 @@ class InheritPartner(models.Model):
                 return data_dict
 
         return data_dict
+
+    def get_xlsx_report(self):
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = workbook.add_worksheet()
+        # Write header
+        header_format = workbook.add_format({'align': 'center', 'bold': True, 'valign':   'vcenter', 'font_name': 'Liberation Sans'})
+        table_header_format = workbook.add_format({'bold': True, 'border': 1, 'font_name': 'Liberation Sans'})
+        sheet.set_column(0, 0, 5)
+        sheet.set_column(1, 1, 25)
+        sheet.set_column(4, 4, 25)
+        sheet.set_column(5, 5, 20)
+        sheet.set_column(6, 6, 20)
+        sheet.merge_range(0, 0, 1, 6, 'Employee’s Covid Status Report', header_format)
+        sheet.write(3, 0, "Sr. No.", table_header_format)
+        sheet.write(3, 1, "Name", table_header_format)
+        sheet.write(3, 2, "Gender", table_header_format)
+        sheet.write(3, 3, "Age", table_header_format)
+        sheet.write(3, 4, "Last Appointment Date", table_header_format)
+        sheet.write(3, 5, "Test Centre", table_header_format)
+        sheet.write(3, 6, "Covid Status", table_header_format)
+
+        # Write Data
+        sql_query = """
+            SELECT er1.partner_id AS partner_id,
+            er2.state AS covid_status,
+            er2.calendar_event_id AS event_id
+            FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
+            LEFT JOIN event_report AS er2 ON er2.id = er1.id
+        """
+        self._cr.execute(sql_query)
+        appointment_report_data = self._cr.dictfetchall()
+        sr_no = 1
+        row = 4
+        col = 0
+        for report_data in appointment_report_data:
+            partner_rec = self.env['res.partner'].browse([report_data.get('partner_id')])
+            calendar_event_rec = self.env['calendar.event'].sudo().browse([report_data.get('event_id')])
+            sheet.write(row, col, sr_no)
+            sheet.write(row, col+1, partner_rec.name)
+            sheet.write(row, col+2, partner_rec.gender.capitalize())
+            sheet.write(row, col+3, partner_rec.age)
+            sheet.write(row, col+4, str(calendar_event_rec.start_datetime))
+            sheet.write(row, col+5, calendar_event_rec.appointment_type_id.name)
+            sheet.write(row, col+6, report_data.get('covid_status').capitalize())
+            sr_no += 1
+            row += 1
+
+        workbook.close()
+        output.seek(0)
+        data = output.read()
+        return data

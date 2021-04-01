@@ -128,6 +128,7 @@
                         </div>
                     </div>
                     <div class="col-9">
+                        <a t-attf-href="/covid_report/download/excel/{{partner_id}}" class="btn btn-warning" style="display: flex; width: 20%;margin-left: 80%;"><i class="fa fa-download"> Print Excel Report</i></a>
                         <div id="child_contact_div" class="row">
                             <t t-foreach="child_contacts" t-as="contact">
                                 <div class="col-6 col-md-4">
