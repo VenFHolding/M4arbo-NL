@@ -17,7 +17,7 @@
         	</xpath>
             <xpath expr="//page[@name='page_details']" position="inside">
                 <group>
-                    <field name='employee_id' domain="[('appointment_type_id', '=', appointment_type_id)]" attrs="{'invisible': [('appointment_type_id', '=', False)]}" options="{'no_create': True}"/>
+                    <field name='employee_id' domain="[('appointment_type_id', '=', appointment_type_id)]" attrs="{'invisible': [('appointment_type_id', '=', False)]}" options="{'no_create': True}" required="True"/>
                     <field name='is_qr_valid' invisible="1"/>
                     <field name='qr_code_string'/>
                 </group>

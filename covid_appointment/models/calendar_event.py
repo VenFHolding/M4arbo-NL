@@ -79,7 +79,7 @@ class CalendarEvent(models.Model):
         for vals in vals_list:
             vals['event_name'] = self.env['ir.sequence'].next_by_code(
                 'calendar.event') or _('New')
-        return super(CalendarEvent, self).create(vals)
+        return super(CalendarEvent, self).create(vals_list)
 
     def mark_done(self):
         self.write({

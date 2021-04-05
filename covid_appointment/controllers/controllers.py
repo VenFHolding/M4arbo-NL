@@ -24,7 +24,7 @@ class DownloadReport(CustomerPortal):
     @http.route('/download/covid_test/label/<model("calendar.event"):event>', type='http', auth='user', website=True)
     def download_covid_test_label(self, event,**kw):
         event.is_label_printed = True
-        return self._show_report(model=event, report_type='pdf', report_ref='covid_appointment.calendar_event_label_report', download=True)
+        return self._show_report(model=event, report_type='pdf', report_ref='covid_appointment.calendar_event_label_report', download=False)
 
 
 class CovidAppointments(http.Controller):

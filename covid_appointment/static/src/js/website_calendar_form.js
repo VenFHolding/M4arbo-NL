@@ -18,6 +18,13 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
             
             var maxDate = year + '-' + month + '-' + day;
             $('#dob_datepicker_calendar_form').prop('max', maxDate);
+
+            this._onCountryChange(this);
+            var country_length = $('#country_field option').length;
+            if (country_length == 1){
+                $("#country_field").val($("#country_field option:first").val());
+                $('#country_field').attr("disabled", true);
+            }
         },
     });
 });
