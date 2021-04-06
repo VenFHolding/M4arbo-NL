@@ -66,7 +66,7 @@
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="o_website_calendar">
                 <div class="oe_structure container mb128">
-                    <h1 class="o_page_header">Appointment: <span t-esc="event.name"/></h1>
+                    <h1 class="o_page_header">Title: <span t-esc="event.partner_ids[0].name"/>, Here is your appointment details.</h1>
                     <div class="alert alert-info" t-if="message=='new'" role="status">
                         <p>
                             <strong>Your appointment has been successfully booked!</strong>
@@ -128,6 +128,8 @@
                             </div>
                             <div class="col-md-10">
                                 <div t-field="event.description"/>
+                                <span>Date of Birth: </span><span t-esc="event.partner_ids[0].dob"/><br/>
+                                <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event.partner_ids[0].gender"/>
                             </div>
                         </div>
                       </div>

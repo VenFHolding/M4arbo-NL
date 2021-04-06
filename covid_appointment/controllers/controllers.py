@@ -91,7 +91,7 @@ class CovidAppointments(http.Controller):
 
     @http.route('/covid_report/<string:event_access_token>',
                 type='http', auth="public", website=True)
-    def view_calendar_event_data(self, event_access_token, **kw):
+    def view_calendar_event_data(self, event_access_token, is_completed=False, **kw):
         """check fetched calendar event reports.
         If it is not exists then upload document screen will be discplayed.
         otherwise it will display the report output."""
@@ -107,6 +107,10 @@ class CovidAppointments(http.Controller):
             'event_rec': event_rec,
             'is_internal_user': True,
         }
+        if is_completed:
+            data.update({
+                'is_completed': True
+            })
         if not user.has_group('base.group_user'):
             data.update({
                 'is_internal_user': False,
@@ -245,7 +249,8 @@ class CovidAppointments(http.Controller):
             event.sudo().attendee_ids._send_mail_to_attendees(
                 'covid_appointment.email_template_covid_achieved_appointment')
 
-        return request.redirect('/website/calendar/')
+        url = "/covid_report/" + event.access_token + "?is_completed=True"
+        return request.redirect(url)
 
     @http.route(['/get_company_appointments'], auth='public', type='json', website=True)
     def get_company_appointments(self, data, **kw):
