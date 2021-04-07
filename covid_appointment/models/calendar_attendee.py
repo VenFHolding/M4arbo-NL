@@ -62,7 +62,7 @@ class Attendee(models.Model):
             'res_id': None,
         }
         mail_ids = []
-        for attendee in self:
+        for attendee in self.filtered(lambda att: att.partner_id.parent_id and att.partner_id.gender):
             mail_ids.append(invitation_template.send_mail(attendee.id, email_values=email_values,
                                                           notif_layout='mail.mail_notification_light'))
 

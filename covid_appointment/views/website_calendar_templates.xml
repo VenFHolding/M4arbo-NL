@@ -63,6 +63,107 @@
 
     <!-- Removed the Cancel appoitment button from the base template. -->
     <template id="appointment_validated_inherited_covid" inherit_id="website_calendar.appointment_validated">
-        <xpath expr="//a[@t-attf-href='/website/calendar/cancel/#{event.access_token}']" position="replace"/>
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="o_website_calendar">
+                <div class="oe_structure container mb128">
+                    <h1 class="o_page_header">Title: <span t-esc="event.patient_partner_id.name"/>, Here is your appointment details.</h1>
+                    <div class="alert alert-info" t-if="message=='new'" role="status">
+                        <p>
+                            <strong>Your appointment has been successfully booked!</strong>
+                        </p>
+                    </div>
+                    <div class="alert alert-danger" t-if="message=='no-cancel'" role="alert">
+                        <p>
+                            <strong>Your appointment is in less than <t t-esc="event.appointment_type_id.min_cancellation_hours"/> hours from now!</strong><br/>
+                            It's too late to cancel online, please contact the attendees another way if you really can't make it.
+                        </p>
+                    </div>
+                    <div class="row">
+                      <t t-if="event.appointment_type_id">
+                          <div t-raw="event.appointment_type_id.message_confirmation" style="margin-bottom:10px;"/>
+                      </t>
+                      <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">When:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <t t-esc="datetime_start"/>
+                                <br/>
+                                <i class="text-muted">(timezone: <t t-esc="request.session.timezone"/>)</i>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">Duration:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <t t-esc="int(event.duration)"/><t t-if="event.duration % 1">:<t t-esc="'%02d' % (int(event.duration % 1 * 60),)"/></t>
+                                hour<t t-if="event.duration>=2">s</t>
+                            </div>
+                        </div>
+                        <div t-if="event.location" class="row">
+                            <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">Location:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <t t-esc="event.location"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">Attendees:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <div t-foreach="event.attendee_ids" t-as="attendee">
+                                    <t t-if="attendee.partner_id.id == event.patient_partner_id.id">
+                                        <t t-esc="attendee.common_name"/>
+                                        <span t-if="attendee.state=='accepted'" class="fa fa-check text-success" title="Confirmed" role="img" aria-label="Confirmed"/>
+                                        <span t-if="attendee.state=='declined'" class="fa fa-times text-danger" title="Declined" role="img" aria-label="Declined"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <div t-if="event.description" class="row">
+                            <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">Your Details:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <div t-field="event.description"/>
+                                <span>Date of Birth: </span><span t-esc="event.patient_partner_id.dob"/><br/>
+                                <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event.patient_partner_id.gender"/>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                          <a role="button" class="btn btn-block btn-primary" t-attf-href="/website/calendar/ics/#{event.access_token}.ics">
+                              <i class="fa fa-fw fa-arrow-right"></i>Add to iCal/Outlook
+                          </a>
+                          <a role="button" class="btn btn-primary btn-block" t-att-href="google_url">
+                              <i class="fa fa-fw fa-arrow-right"></i>Add to Google Calendar
+                          </a>
+                      </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="appointment_calendar_inherited" inherit_id="website_calendar.appointment_calendar">
+        <xpath expr="//div[@role='menu']" position="attributes">
+            <attribute name="style">height:200px;overflow:scroll;</attribute>
+        </xpath>
+    </template>
+
+    <template inherit_id="website_calendar.appointment" id="appointment_inherited">
+        <xpath expr="//t[@t-call='website_calendar.appointment_calendar']" position="before">
+            <div class="row">
+                <div class="col-12">
+                    <h4>Test Centre: <t t-esc="appointment_type.name"/></h4>
+                </div>
+            </div>
+        </xpath>
     </template>
 </odoo>

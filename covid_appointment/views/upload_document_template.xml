@@ -8,6 +8,10 @@
                         <h2>Scanned Appointment Details:</h2>
                         <table class="table">
                             <tr>
+                                <td style="width:35%"><b>Patient Name:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.partner_ids[0].name"/></td>
+                            </tr>
+                            <tr>
                                 <td style="width:35%"><b>Test Center:</b></td>
                                 <td style="width:65%"><t t-esc="event_rec.appointment_type_id.name"/></td>
                             </tr>
@@ -17,7 +21,11 @@
                             </tr>
                             <tr>
                                 <td><b>Other Details:</b></td>
-                                <td><p t-field="event_rec.description"/></td>
+                                <td>
+                                    <p style="margin-bottom: 0" t-field="event_rec.description"/>
+                                    <span>Date of Birth: </span><span t-esc="event_rec.patient_partner_id.dob"/><br/>
+                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.patient_partner_id.gender"/>
+                                </td>
                             </tr>
                         </table>
                         <div class="row">
@@ -25,7 +33,7 @@
                                 <button id="cancel_appointment" class="btn btn-danger btn-block" name="cancel_appointment" data-toggle="modal" data-target="#cancel_reason_modal"><i class="fa fa-close mr-1"></i>Cancel Appointment</button>
                             </div>
                             <div t-if="is_internal_user" class="col-4">
-                                <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print"><i class="fa fa-print"/> Print Label</a>
+                                <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print" target="new"><i class="fa fa-print"/> Print Label</a>
                             </div>                            
                             <div t-if="is_internal_user and event_rec.is_label_printed" class="col-4 text-right">
                                 <button id="fill_details" class="btn btn-primary btn-block" name="fill_report_details" data-toggle="modal" data-target="#fill_covid_report_modal"><i class="fa fa-tasks"></i> Fill Data</button>
@@ -36,13 +44,28 @@
                         <div class="modal fade formwizardpopup" id="cancel_reason_modal" role="dialog">
                             <div class="modal-dialog">
                                 <div class="modal-content banner">
-                                    <div class="modal-body">
+                                    <div class="modal-header" style="background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
+                                        <div class="row" style="width: 95%;background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
+                                            <div class="col-6">
+                                                <strong>Company Ref:  </strong><span t-esc="event_rec.patient_partner_id.parent_id.name"/><br/>
+                                                <strong>Patient Name:  </strong><span t-esc="event_rec.patient_partner_id.name"/>
+                                                <br/>
+                                                <strong>Patient Email:  </strong><span t-esc="event_rec.patient_partner_id.email"/>
+                                            </div>
+                                            <div class="col-6 text-right">
+                                                <strong>Date &amp; Time:  </strong><span t-field="event_rec.start_datetime"/><br/>
+                                                <strong>Test Centre:  </strong><span t-esc="event_rec.appointment_type_id.name"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="button" class="close" data-dismiss="modal" style="color: #000;opacity: 0.2;"><i class="fa fa-close"/></button>
+                                    </div>
+                                    <div class="modal-body" style="background-color: #ffffff !important;color:#000000 !important;font-size: smaller !important;">
                                         <form method="POST" t-att-action="'/calender/event/cancel/%s' % event_rec.id">
-                                            <button type="button" class="close" data-dismiss="modal" style="color: #000;opacity: 0.2;"><i class="fa fa-close"/></button>
                                             <div class="form_wizard" id="myWizard">
                                                 <div class="row">
                                                     <div class="col-12">
-                                                        <textarea rows="5" name="cancel_reason" class="form-control" placeholder="Please specify the cancel appointment reason" style="resize: none;" required="required"/>
+                                                        <textarea rows="5" name="cancel_reason" class="form-control" placeholder="Please specify the cancel appointment reason" style="resize: none;color: #495057;background-color: #FFFFFF;order-radius: 0.25rem;transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;border: 1px solid #ced4da;" required="required"/>
                                                     </div>
                                                     <div class="col-12 mt-3">
                                                         <button class="btn btn-primary" type="submit">Submit</button>
@@ -59,13 +82,13 @@
                         <div class="modal fade formwizardpopup" id="fill_covid_report_modal" role="dialog">
                             <div class="modal-dialog">
                                 <div class="modal-content banner">
-                                    <div class="modal-header" style="background-color: lightgray;color:#000000;font-size: smaller;">
-                                        <div class="row" style="width: 95%;">
+                                    <div class="modal-header" style="background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
+                                        <div class="row" style="width: 95%;background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
                                             <div class="col-6">
-                                                <strong>Company Ref:  </strong><span t-esc="event_rec.partner_ids[0].parent_id.name"/><br/>
-                                                <strong>Patient Name:  </strong><span t-esc="event_rec.partner_ids[0].name"/>
+                                                <strong>Company Ref:  </strong><span t-esc="event_rec.patient_partner_id.parent_id.name"/><br/>
+                                                <strong>Patient Name:  </strong><span t-esc="event_rec.patient_partner_id.name"/>
                                                 <br/>
-                                                <strong>Patient Email:  </strong><span t-esc="event_rec.partner_ids[0].email"/>
+                                                <strong>Patient Email:  </strong><span t-esc="event_rec.patient_partner_id.email"/>
                                             </div>
                                             <div class="col-6 text-right">
                                                 <strong>Date &amp; Time:  </strong><span t-field="event_rec.start_datetime"/><br/>
@@ -75,7 +98,7 @@
                                         
                                         <button type="button" class="close" data-dismiss="modal" style="color: #000;opacity: 0.2;"><i class="fa fa-close"/></button>
                                     </div>
-                                    <div class="modal-body">
+                                    <div class="modal-body" style="background-color: #ffffff !important;color:#000000 !important;font-size: smaller !important;">
                                         <form method="POST" t-att-action="'/calender/event/post_covid_data/%s' % event_rec.id">
                                             <div class="form_wizard" id="myWizard">
                                                 <table class="table covid_question_table">
@@ -98,7 +121,7 @@
                                                     </tr>
                                                     <tr class="not_achived_reason">
                                                         <td>
-                                                            <textarea rows="5" name="not_achived_reason" class="form-control" placeholder="Please specify the not achived reason" style="resize: none;"/>
+                                                            <textarea rows="5" name="not_achived_reason" class="form-control" placeholder="Please specify the not achived reason" style="resize: none;color: #495057;background-color: #FFFFFF;order-radius: 0.25rem;transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;border: 1px solid #ced4da;"/>
                                                         </td>
                                                     </tr>
                                                     <tr class="check_postive">
@@ -124,7 +147,7 @@
                                                     </tr>
                                                     <tr class="test_failed_reason">
                                                         <td>
-                                                            <textarea rows="5" name="test_failed_reason" class="form-control" placeholder="Please specify the test failed reason" style="resize: none;"/>
+                                                            <textarea rows="5" name="test_failed_reason" class="form-control" placeholder="Please specify the test failed reason" style="resize: none;color: #495057;background-color: #FFFFFF;order-radius: 0.25rem;transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;border: 1px solid #ced4da;"/>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -150,8 +173,17 @@
             <div class="oe_structure container mb128">
                 <div t-if="event_rec" class="row">
                     <div class="col-md-7">
-                        <h2>Scanned Appointment Details:</h2>
+                        <t t-if="is_completed">
+                            <h2>Appointment Completed.</h2>
+                        </t>
+                        <t t-else="">
+                            <h2>Scanned Appointment Details:</h2>
+                        </t>
                         <table class="table">
+                            <tr>
+                                <td style="width:35%"><b>Patient Name:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
+                            </tr>
                             <tr>
                                 <td style="width:35%"><b>Test Center:</b></td>
                                 <td style="width:65%"><t t-esc="event_rec.appointment_type_id.name"/></td>
@@ -162,7 +194,11 @@
                             </tr>
                             <tr>
                                 <td><b>Other Details:</b></td>
-                                <td><p t-field="event_rec.description"/></td>
+                                <td>
+                                    <p style="margin-bottom:0;" t-field="event_rec.description"/>
+                                    <span>Date of Birth: </span><span t-esc="event_rec.patient_partner_id.dob"/><br/>
+                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.patient_partner_id.gender"/>
+                                </td>
                             </tr>
                         </table>
                     </div>

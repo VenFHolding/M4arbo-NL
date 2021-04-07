@@ -282,8 +282,8 @@ class CustomerPortal(CustomerPortal):
             event_data = {
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                 'test_center': event_rec.appointment_type_id.name,
-                'partner_name': event_rec.partner_ids[0].name,
-                'company_ref': event_rec.partner_ids[0].parent_id.name,
+                'partner_name': event_rec.patient_partner_id.name,
+                'company_ref': event_rec.patient_partner_id.parent_id.name,
                 'appointment_status': dict(event_rec._fields['state'].selection).get(event_rec.state),
                 'covid_status': False,
                 'link': event_rec.qr_code_string,

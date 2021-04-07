@@ -4,7 +4,7 @@
         <t t-call="web.basic_layout">
             <div class="page">
                 <div class="text-center">
-                    <span style="font-size: smaller;display: inline-block;width: 75px;white-space: nowrap;overflow: hidden !important;text-overflow: ellipsis;" t-esc="doc.partner_ids[0].name"/>
+                    <span style="font-size: smaller;display: inline-block;width: 75px;white-space: nowrap;overflow: hidden !important;text-overflow: ellipsis;" t-esc="doc.patient_partner_id.name"/>
                     <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', doc.qr_code_string, 80, 80)"/>
                 </div>
             </div>
