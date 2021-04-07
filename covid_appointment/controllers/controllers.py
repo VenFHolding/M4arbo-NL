@@ -184,23 +184,25 @@ class CovidAppointments(http.Controller):
             cancelled_by = 'company'
             user_name = str(res_user.partner_id.name)
 
-        event.sudo().write({
-            'state': 'cancel',
-            'cancelled_by': cancelled_by,
-            'not_achived_reason': post.get('cancel_reason'),
-            'active': False,
-        })            
+        if not event.is_label_printed:
+            event.sudo().write({
+                'state': 'cancel',
+                'cancelled_by': cancelled_by,
+                'not_achived_reason': post.get('cancel_reason'),
+                'active': False,
+            })
 
-        msg = "<b>"
-        msg = msg + 'The event is Cancelled by ' + str(user_name) + '. \n '
-        msg = msg + "</b><ul>"
-        msg = msg + "Reason : " + post.get('cancel_reason') + '. \n </ul>'
-        event.sudo().message_post(body=msg)
-        if event.sudo().attendee_ids:
-            event.sudo().attendee_ids._send_mail_to_attendees(
-                'covid_appointment.email_template_covid_cancel_appointment')
+            msg = "<b>"
+            msg = msg + 'The event is Cancelled by ' + str(user_name) + '. \n '
+            msg = msg + "</b><ul>"
+            msg = msg + "Reason : " + post.get('cancel_reason') + '. \n </ul>'
+            event.sudo().message_post(body=msg)
+            if event.sudo().attendee_ids:
+                event.sudo().attendee_ids._send_mail_to_attendees(
+                    'covid_appointment.email_template_covid_cancel_appointment')
 
-        return request.redirect('/website/calendar?message=cancel')
+            return request.redirect('/website/calendar?message=cancel')
+
 
     @http.route('/calender/event/post_covid_data/<model("calendar.event"):event>',
                 type='http', auth="public", methods=['POST'], website=True, csrf=False)

@@ -10,11 +10,19 @@
                     <div id="error_message_section" class="text-danger" role="alert">
                         Invalid Company Reference.
                     </div>
+                    <div id="error_required_section" class="text-danger" role="alert">
+                        Required.
+                    </div>
                 </div>
             </div>
         </xpath>
         <xpath expr="//label[@for='calendarType']" position="replace">
             <label for="calendarType" class="col-md-3 col-form-label">Test Centre</label>
+        </xpath>
+        <xpath expr="//select[@id='calendarType']" position="after">
+            <div id="error_required_section_type" class="text-danger" role="alert">
+                Required.
+            </div>
         </xpath>
     </template>
 </odoo>

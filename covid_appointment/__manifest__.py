@@ -13,7 +13,7 @@
     'website': 'http://www.pragtech.co.in',
     'license': 'OPL-1',
     'category': 'Appointment',
-    'version': '13.0.3.5.0',
+    'version': '13.0.3.6.0',
     'depends': ['website_calendar', 'contacts'],
     'data': [
         'security/appointment_security.xml',
@@ -25,7 +25,6 @@
         'data/achieved_event_template.xml',
         'data/appointment_results_template.xml',
         'data/cron_job.xml',
-        # 'data/website_menu.xml',
         'reports/calendar_event_report_paperformat.xml',
         'reports/calendar_event_report_template.xml',
         'reports/calendar_event_report.xml',

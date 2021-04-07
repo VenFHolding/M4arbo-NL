@@ -38,6 +38,5 @@ odoo.define('covid_appointment.upload_document_form', function (require) {
                 $('.test_failed_reason').css('display', 'none');   
             }
         },
-
     })
 });

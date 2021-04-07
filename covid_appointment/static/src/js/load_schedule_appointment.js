@@ -8,7 +8,8 @@ odoo.define('covid_appointment.appointmentjs', function (require) {
     return websiteCalendarSelect.include({
         events: _.extend({
             'change #company_ref': 'update_test_centers',
-            'click button[type="submit"]': 'check_input_values'
+            'click button[type="submit"]': 'check_input_values',
+            'keypress #company_ref': 'remove_error_message',
         }, websiteCalendarSelect.prototype.events),
 
         start: function (parent) {
@@ -18,20 +19,34 @@ odoo.define('covid_appointment.appointmentjs', function (require) {
             $('#calendarType').empty();
             $('.o_calendar_intro').html('');
             $('#error_message_section').css('display', 'none');
+            $('#error_required_section').css('display', 'none');
+            $('#error_required_section_type').css('display', 'none');
         },
 
         check_input_values: function(ev){
             var self = this;
             var company_ref = self.$el.find('#company_ref').val();
             var calendarType = self.$el.find('#calendarType').children("option:selected").val();
+            var status = true;
             if (!company_ref){
                 $('#company_ref').css('border-color', 'red');
-                ev.preventDefault()
+                $('#error_required_section').css('display', 'block');
+                $('#error_message_section').css('display', 'none');
+                status = false;
             }
             if (!calendarType){
                 $('#calendarType').css('border-color', 'red');
-                ev.preventDefault()
+                $('#error_required_section_type').css('display', 'block');
+                status = false;
             }
+            if (!status){
+                ev.preventDefault();
+            }
+        },
+
+        remove_error_message: function(ev){
+            $('#company_ref').css('border-color', '#ced4da');
+            $('#error_required_section').css('display', 'none');
         },
 
         _onAppointmentTypeChange_duplicate: function (ev) {
@@ -58,7 +73,6 @@ odoo.define('covid_appointment.appointmentjs', function (require) {
             });
         },
 
-
         update_test_centers: function(){
             var self = this;
             var value = self.$el.find('#company_ref').val();
@@ -83,9 +97,12 @@ odoo.define('covid_appointment.appointmentjs', function (require) {
                         option_html += '>' + appointment['name']+'</option>'
                         $('#calendarType').append(option_html);
                     }
+                    $('#calendarType').css('border-color', '#ced4da');
+                    $('#error_required_section_type').css('display', 'none');
                     self._onAppointmentTypeChange_duplicate(self.$el.find('#calendarType'))
                 }
                 else {
+                    self.$el.find('#error_required_section').css('display', 'none');
                     self.$el.find('#error_message_section').css('display', 'block');
                     $("#calendarType option").prop("selected", false);
                     $('#calendarType').empty();
