@@ -23,8 +23,8 @@
                                 <td><b>Other Details:</b></td>
                                 <td>
                                     <p style="margin-bottom: 0" t-field="event_rec.description"/>
-                                    <span>Date of Birth: </span><span t-esc="event_rec.partner_ids[0].dob"/><br/>
-                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.partner_ids[0].gender"/>
+                                    <span>Date of Birth: </span><span t-esc="event_rec.patient_partner_id.dob"/><br/>
+                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.patient_partner_id.gender"/>
                                 </td>
                             </tr>
                         </table>
@@ -47,10 +47,10 @@
                                     <div class="modal-header" style="background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
                                         <div class="row" style="width: 95%;background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
                                             <div class="col-6">
-                                                <strong>Company Ref:  </strong><span t-esc="event_rec.partner_ids[0].parent_id.name"/><br/>
-                                                <strong>Patient Name:  </strong><span t-esc="event_rec.partner_ids[0].name"/>
+                                                <strong>Company Ref:  </strong><span t-esc="event_rec.patient_partner_id.parent_id.name"/><br/>
+                                                <strong>Patient Name:  </strong><span t-esc="event_rec.patient_partner_id.name"/>
                                                 <br/>
-                                                <strong>Patient Email:  </strong><span t-esc="event_rec.partner_ids[0].email"/>
+                                                <strong>Patient Email:  </strong><span t-esc="event_rec.patient_partner_id.email"/>
                                             </div>
                                             <div class="col-6 text-right">
                                                 <strong>Date &amp; Time:  </strong><span t-field="event_rec.start_datetime"/><br/>
@@ -85,10 +85,10 @@
                                     <div class="modal-header" style="background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
                                         <div class="row" style="width: 95%;background-color: lightgray;color:#000000 !important;font-size: smaller !important;">
                                             <div class="col-6">
-                                                <strong>Company Ref:  </strong><span t-esc="event_rec.partner_ids[0].parent_id.name"/><br/>
-                                                <strong>Patient Name:  </strong><span t-esc="event_rec.partner_ids[0].name"/>
+                                                <strong>Company Ref:  </strong><span t-esc="event_rec.patient_partner_id.parent_id.name"/><br/>
+                                                <strong>Patient Name:  </strong><span t-esc="event_rec.patient_partner_id.name"/>
                                                 <br/>
-                                                <strong>Patient Email:  </strong><span t-esc="event_rec.partner_ids[0].email"/>
+                                                <strong>Patient Email:  </strong><span t-esc="event_rec.patient_partner_id.email"/>
                                             </div>
                                             <div class="col-6 text-right">
                                                 <strong>Date &amp; Time:  </strong><span t-field="event_rec.start_datetime"/><br/>
@@ -182,7 +182,7 @@
                         <table class="table">
                             <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
-                                <td style="width:65%"><t t-esc="event_rec.partner_ids[0].name"/></td>
+                                <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
                             </tr>
                             <tr>
                                 <td style="width:35%"><b>Test Center:</b></td>
@@ -196,8 +196,8 @@
                                 <td><b>Other Details:</b></td>
                                 <td>
                                     <p style="margin-bottom:0;" t-field="event_rec.description"/>
-                                    <span>Date of Birth: </span><span t-esc="event_rec.partner_ids[0].dob"/><br/>
-                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.partner_ids[0].gender"/>
+                                    <span>Date of Birth: </span><span t-esc="event_rec.patient_partner_id.dob"/><br/>
+                                    <span>Gender: </span><span style="text-transform: capitalize;" t-esc="event_rec.patient_partner_id.gender"/>
                                 </td>
                             </tr>
                         </table>

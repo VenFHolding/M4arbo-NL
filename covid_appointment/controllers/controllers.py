@@ -67,8 +67,8 @@ class CovidAppointments(http.Controller):
                 event_data = {
                     'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                     'test_center': event_rec.appointment_type_id.name,
-                    'partner_name': event_rec.partner_ids.filtered(lambda p: p.id != event_rec.partner_id.id).name,
-                    'company_ref': event_rec.partner_ids.filtered(lambda p: p.id != event_rec.partner_id.id).parent_id.name,
+                    'partner_name': event_rec.patient_partner_id.name,
+                    'company_ref': event_rec.patient_partner_id.parent_id.name,
                     'appointment_status': dict(event_rec._fields['state'].selection).get(event_rec.state),
                     'covid_status': False,
                 }
@@ -178,7 +178,7 @@ class CovidAppointments(http.Controller):
 
         if res_user.has_group('base.group_portal'):
             cancelled_by = 'customer'
-            user_name = str(event.sudo().attendee_ids[0].partner_id.name)
+            user_name = str(event.sudo().patient_partner_id.name)
 
         if res_user.has_group('base.group_user'):
             cancelled_by = 'company'
@@ -212,8 +212,9 @@ class CovidAppointments(http.Controller):
         event_achived = False
         covid_status = 'negative'
         test_failed_reason = ''
+        patient_partner_id = event.patient_partner_id
         attendee = event.attendee_ids.filtered(
-            lambda atd: atd.partner_id.id != atd.event_id.user_id.partner_id.id)
+            lambda atd: atd.partner_id.id == patient_partner_id.id)
         if post.get('is_achived') == 'yes':
             event_achived = True
             if post.get('is_positive') == 'yes':
@@ -227,7 +228,7 @@ class CovidAppointments(http.Controller):
             event_report_rec = event_report.sudo().create({
                 'state': covid_status,
                 'calendar_event_id': event.id,
-                'partner_id': attendee.partner_id.id or False,
+                'partner_id': patient_partner_id.id or False,
                 'test_failed_reason': test_failed_reason,
             })
             event.sudo().mark_done()
@@ -238,8 +239,7 @@ class CovidAppointments(http.Controller):
                 context = {
                     'covid_result': event_report_rec.state
                 }
-                for attendee in event.sudo().attendee_ids:
-                    invitation_template.with_context(context).send_mail(attendee.id, notif_layout='mail.mail_notification_light')
+                invitation_template.with_context(context).send_mail(attendee.id, notif_layout='mail.mail_notification_light')
 
         else:
             event.sudo().write({
@@ -290,20 +290,24 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             to the appointment type user.
             Also checked the previous appointment before create a new one for same person.
         """
-
         timezone = request.session['timezone']
         tz_session = pytz.timezone(timezone)
-
-        country_id = int(country_id) if country_id else None
-        country_name = country_id and request.env['res.country'].browse(country_id).name or ''
-
         date_start = tz_session.localize(fields.Datetime.from_string(datetime_str)).astimezone(pytz.utc)
         date_end = date_start + relativedelta(hours=appointment_type.appointment_duration)
 
-        Partner = request.env['res.partner'].sudo().search([('email', '=like', email)], limit=1)
-        partner_company_ref = request.env['res.partner'].sudo().search([('ref', '=', kwargs.get('company_ref')),
-                                                     ('company_type', '=', 'company')], limit=1)
+        # check availability of the employee again (in case someone else booked while the client was entering the form)
+        Employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+        if Employee.user_id and Employee.user_id.partner_id:
+            if not Employee.user_id.partner_id.calendar_verify_availability(date_start, date_end):
+                return request.redirect('/website/calendar/%s/appointment?failed=employee' % appointment_type.id)
 
+        company_id = request.env['res.company'].search([], limit=1).id
+        country_id = int(country_id) if country_id else None
+        country_name = country_id and request.env['res.country'].browse(country_id).name or ''
+        Partner = request.env['res.partner'].sudo().search([('email', '=like', email)], limit=1)
+        partner_company_ref = request.env['res.partner'].sudo().search(
+            [('ref', '=', kwargs.get('company_ref')),
+             ('company_type', '=', 'company')], limit=1)
         if Partner:
             data_dict = Partner.appointmet_verify_check(Partner, date_start)
             if data_dict.get('message'):
@@ -319,18 +323,14 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
                 if datetime_str and employee_id:
                     url += '&date_time=' + datetime_str
                 return request.redirect(url)
-
             if not Partner.calendar_verify_availability(date_start, date_end):
                 return request.redirect('/website/calendar/%s/appointment?failed=partner' % appointment_type.id)
             if not Partner.mobile or len(Partner.mobile) <= 5 and len(phone) > 5:
                 Partner.write({'mobile': phone})
             if not Partner.country_id:
                 Partner.country_id = country_id
-
-        if not Partner:
-            company_id = request.env['res.company'].search([], limit=1).id
-            country_id = int(country_id) if country_id else None
-            Partner = request.env['res.partner'].sudo().create({
+        else:
+            Partner = Partner.create({
                 'name': name,
                 'country_id': country_id,
                 'mobile': phone,
@@ -351,12 +351,6 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             user_rec.partner_id.signup_prepare()
             user_rec.action_reset_password()
 
-        # check availability of the employee again (in case someone else booked while the client was entering the form)
-        Employee = request.env['hr.employee'].sudo().browse(int(employee_id))
-        if Employee.user_id and Employee.user_id.partner_id:
-            if not Employee.user_id.partner_id.calendar_verify_availability(date_start, date_end):
-                return request.redirect('/website/calendar/%s/appointment?failed=employee' % appointment_type.id)
-
         description = (_('Country: %s') + '\n' +
                        _('Mobile: %s') + '\n' +
                        _('Email: %s') + '\n') % (country_name, phone, email)
@@ -373,7 +367,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
 
         categ_id = request.env.ref('website_calendar.calendar_event_type_data_online_appointment')
         alarm_ids = appointment_type.reminder_ids and [(6, 0, appointment_type.reminder_ids.ids)] or []
-        partner_ids = list([Partner.id])
+        partner_ids = list(set([Employee.user_id.partner_id.id] + [Partner.id]))
         event = request.env['calendar.event'].sudo().create({
             'state': 'open',
             'name': _('%s with %s') % (appointment_type.name, name),
@@ -396,6 +390,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
             'categ_ids': [(4, categ_id.id, False)],
             'appointment_type_id': appointment_type.id,
             'user_id': Employee.user_id.id,
+            'patient_partner_id': Partner.id,
         })
         event.attendee_ids.write({'state': 'accepted'})
         return request.redirect('/website/calendar/view/' + event.access_token + '?message=new')

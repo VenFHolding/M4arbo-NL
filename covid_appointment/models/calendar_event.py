@@ -56,6 +56,7 @@ class CalendarEvent(models.Model):
     cancelled_by = fields.Selection([('company', 'Company'), ('customer', 'Customer')],
                                     default="customer", string="Cancelled By")
     is_label_printed = fields.Boolean(default=False, copy=False)
+    patient_partner_id = fields.Many2one('res.partner', string="Patient")
 
     def _get_report_base_filename(self):
         self.ensure_one()
