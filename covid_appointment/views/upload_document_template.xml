@@ -33,10 +33,15 @@
                                 <button id="cancel_appointment" class="btn btn-danger btn-block" name="cancel_appointment" data-toggle="modal" data-target="#cancel_reason_modal"><i class="fa fa-close mr-1"></i>Cancel Appointment</button>
                             </div>
                             <div t-if="is_internal_user" class="col-4">
-                                <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print" target="new"><i class="fa fa-print"/> Print Label</a>
+                                <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print" target="_blank"><i class="fa fa-print"/> Print Label</a>
                             </div>                            
                             <div t-if="is_internal_user and event_rec.is_label_printed" class="col-4 text-right">
                                 <button id="fill_details" class="btn btn-primary btn-block" name="fill_report_details" data-toggle="modal" data-target="#fill_covid_report_modal"><i class="fa fa-tasks"></i> Fill Data</button>
+                            </div>
+                            <div id="cancel_appointment_error_msg" t-if="no_cancel" class="col-12 mt-3">
+                                <div class="alert alert-danger" role="alert">
+                                    <p><strong>You can't cancel the appointment after print label.</strong></p>
+                                </div>
                             </div>
                         </div>
 

@@ -91,7 +91,7 @@ class CovidAppointments(http.Controller):
 
     @http.route('/covid_report/<string:event_access_token>',
                 type='http', auth="public", website=True)
-    def view_calendar_event_data(self, event_access_token, is_completed=False, **kw):
+    def view_calendar_event_data(self, event_access_token, is_completed=False, no_cancel=False, **kw):
         """check fetched calendar event reports.
         If it is not exists then upload document screen will be discplayed.
         otherwise it will display the report output."""
@@ -110,6 +110,10 @@ class CovidAppointments(http.Controller):
         if is_completed:
             data.update({
                 'is_completed': True
+            })
+        if no_cancel:
+            data.update({
+                'no_cancel': True,
             })
         if not user.has_group('base.group_user'):
             data.update({
@@ -202,6 +206,9 @@ class CovidAppointments(http.Controller):
                     'covid_appointment.email_template_covid_cancel_appointment')
 
             return request.redirect('/website/calendar?message=cancel')
+
+        if event.is_label_printed:
+            return request.redirect('/covid_report/'+ event.access_token +'?no_cancel=True')
 
 
     @http.route('/calender/event/post_covid_data/<model("calendar.event"):event>',
