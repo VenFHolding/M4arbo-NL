@@ -9,6 +9,7 @@ odoo.define('covid_appointment.upload_document_form', function (require) {
         'click input[id="is_test_achived_yes"]': '_onClick_is_test_achived_yes',
         'click input[id="is_test_achived_no"]': '_onClick_is_test_achived_no',
         'click input[name="is_positive"]': '_onClick_is_positive',
+        'click #print_label_report': '_reload_page',
         },
 
         start: function(parent){
@@ -16,6 +17,14 @@ odoo.define('covid_appointment.upload_document_form', function (require) {
             $('.check_postive').css('display', 'none');
             $('.not_achived_reason').css('display', 'none');
             $('.test_failed_reason').css('display', 'none');
+            setTimeout(function(){
+                $('#cancel_appointment_error_msg').hide(1000);
+            }, 5000);
+        },
+        _reload_page: function(){
+            setTimeout(function(){
+                location.reload()
+            }, 2000);
         },
         _onClick_is_test_achived_yes: function(ev){
             $('.check_postive').css('display', 'table-row');
@@ -38,6 +47,5 @@ odoo.define('covid_appointment.upload_document_form', function (require) {
                 $('.test_failed_reason').css('display', 'none');   
             }
         },
-
     })
 });

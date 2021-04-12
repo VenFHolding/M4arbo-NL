@@ -10,7 +10,7 @@
         	<xpath expr="//sheet" position="before">
         		<header>
                     <button type="object" name="mark_done" string="Mark as Done" class="btn btn-primary" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
-                    <button type="object" name="mark_cancel" string="Cancel" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
+                    <button type="object" name="mark_cancel" string="Cancel" attrs="{'invisible': ['|',('state', 'in', ['cancel','done', 'not achieved']), ('is_label_printed', '=', True)]}"/>
                     <button type="object" name="mark_not_achieved" string="Not Achieved" attrs="{'invisible': [('state', 'in', ['cancel','done', 'not achieved'])]}"/>
         			<field name="state" widget="statusbar"/>
         		</header>

@@ -91,7 +91,7 @@ class CovidAppointments(http.Controller):
 
     @http.route('/covid_report/<string:event_access_token>',
                 type='http', auth="public", website=True)
-    def view_calendar_event_data(self, event_access_token, is_completed=False, **kw):
+    def view_calendar_event_data(self, event_access_token, is_completed=False, no_cancel=False, **kw):
         """check fetched calendar event reports.
         If it is not exists then upload document screen will be discplayed.
         otherwise it will display the report output."""
@@ -110,6 +110,10 @@ class CovidAppointments(http.Controller):
         if is_completed:
             data.update({
                 'is_completed': True
+            })
+        if no_cancel:
+            data.update({
+                'no_cancel': True,
             })
         if not user.has_group('base.group_user'):
             data.update({
@@ -184,23 +188,28 @@ class CovidAppointments(http.Controller):
             cancelled_by = 'company'
             user_name = str(res_user.partner_id.name)
 
-        event.sudo().write({
-            'state': 'cancel',
-            'cancelled_by': cancelled_by,
-            'not_achived_reason': post.get('cancel_reason'),
-            'active': False,
-        })            
+        if not event.is_label_printed:
+            event.sudo().write({
+                'state': 'cancel',
+                'cancelled_by': cancelled_by,
+                'not_achived_reason': post.get('cancel_reason'),
+                'active': False,
+            })
 
-        msg = "<b>"
-        msg = msg + 'The event is Cancelled by ' + str(user_name) + '. \n '
-        msg = msg + "</b><ul>"
-        msg = msg + "Reason : " + post.get('cancel_reason') + '. \n </ul>'
-        event.sudo().message_post(body=msg)
-        if event.sudo().attendee_ids:
-            event.sudo().attendee_ids._send_mail_to_attendees(
-                'covid_appointment.email_template_covid_cancel_appointment')
+            msg = "<b>"
+            msg = msg + 'The event is Cancelled by ' + str(user_name) + '. \n '
+            msg = msg + "</b><ul>"
+            msg = msg + "Reason : " + post.get('cancel_reason') + '. \n </ul>'
+            event.sudo().message_post(body=msg)
+            if event.sudo().attendee_ids:
+                event.sudo().attendee_ids._send_mail_to_attendees(
+                    'covid_appointment.email_template_covid_cancel_appointment')
 
-        return request.redirect('/website/calendar?message=cancel')
+            return request.redirect('/website/calendar?message=cancel')
+
+        if event.is_label_printed:
+            return request.redirect('/covid_report/'+ event.access_token +'?no_cancel=True')
+
 
     @http.route('/calender/event/post_covid_data/<model("calendar.event"):event>',
                 type='http', auth="public", methods=['POST'], website=True, csrf=False)
