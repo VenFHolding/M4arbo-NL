@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class CalendarEvent(models.Model):
@@ -57,6 +58,10 @@ class CalendarEvent(models.Model):
                                     default="customer", string="Cancelled By")
     is_label_printed = fields.Boolean(default=False, copy=False)
     patient_partner_id = fields.Many2one('res.partner', string="Patient")
+    covid_status = fields.Selection([('positive', 'Positive'),
+                                     ('negative', 'Negative'),
+                                     ('failed', 'Test Failed')],
+                                    string="Covid State", readonly=1)
 
     def _get_report_base_filename(self):
         self.ensure_one()
@@ -82,10 +87,18 @@ class CalendarEvent(models.Model):
                 'calendar.event') or _('New')
         return super(CalendarEvent, self).create(vals_list)
 
-    def mark_done(self):
-        self.write({
-            'state': 'done',
-        })
+    def mark_done(self, covid_status=False):
+        if self.employee_id:
+            vals = {
+                'state': 'done',
+            }
+            if covid_status:
+                vals.update({
+                    'covid_status': covid_status
+                })
+            self.write(vals)
+        else:
+            raise ValidationError(_("Test Centre staff is missing. Please entre the Test Centre Staff details."))
 
     def mark_not_achieved(self):
         return {

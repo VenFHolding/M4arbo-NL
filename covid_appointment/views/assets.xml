@@ -9,4 +9,10 @@
             <script type="text/javascript" src="/covid_appointment/static/src/js/website_calendar_form.js"></script>
         </xpath>
     </template>
+
+    <template id="assets_backend_inherited" inherit_id="web.assets_backend" name="Website Backend Assets (used in backend interface)">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/covid_appointment/static/src/js/website_publish.js"/>
+        </xpath>
+    </template>
 </odoo>

@@ -106,6 +106,7 @@ class CovidAppointments(http.Controller):
             'base_url': base_url,
             'event_rec': event_rec,
             'is_internal_user': True,
+            'disable_fill_data': '',
         }
         if is_completed:
             data.update({
@@ -122,6 +123,10 @@ class CovidAppointments(http.Controller):
         if event_rec:
             # If event is in confirmed state then event can be cancelled or test center can fill the data
             # for the covid status.
+            if not event_rec.employee_id:
+                data.update({
+                    'disable_fill_data': 'disabled',
+                })
             if event_rec.state not in ['done', 'cancel', 'not achieved']:
                 return http.request.render('covid_appointment.upload_covid_document', data)
 
@@ -240,7 +245,7 @@ class CovidAppointments(http.Controller):
                 'partner_id': patient_partner_id.id or False,
                 'test_failed_reason': test_failed_reason,
             })
-            event.sudo().mark_done()
+            event.sudo().mark_done(covid_status=covid_status)
 
             # Send mail to attendees if covid report is positive or negative.
             if event.sudo().attendee_ids:
@@ -436,6 +441,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
                 countries_recs = company_ref_id.restrict_country_ids
             template_data.update({
                 'ref_partner_ref': company_ref_id.ref,
+                'ref_partner_name': company_ref_id.name,
                 'countries': countries_recs,
             })
         return request.render("website_calendar.appointment_form", template_data)
@@ -478,7 +484,8 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
 
     @http.route(['/website/calendar/<model("calendar.appointment.type"):appointment_type>/appointment'], type='http', auth="public", website=True)
     def calendar_appointment(self, appointment_type=None, employee_id=None, timezone=None, failed=False, **kwargs):
-        request.session['partner_id'] = kwargs.get('company_ref')
+        if kwargs.get('company_ref'):
+            request.session['partner_id'] = kwargs.get('company_ref')
         request.session['timezone'] = timezone or appointment_type.appointment_tz
         Employee = request.env['hr.employee'].sudo().browse(int(employee_id)) if employee_id else None
         Slots = appointment_type.sudo()._get_appointment_slots(request.session['timezone'], Employee)

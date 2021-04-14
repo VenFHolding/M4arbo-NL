@@ -11,7 +11,7 @@
                         Invalid Company Reference.
                     </div>
                     <div id="error_required_section" class="text-danger" role="alert">
-                        Required.
+                        Please enter your Company ID.
                     </div>
                 </div>
             </div>
@@ -21,7 +21,7 @@
         </xpath>
         <xpath expr="//select[@id='calendarType']" position="after">
             <div id="error_required_section_type" class="text-danger" role="alert">
-                Required.
+                Please Select Test Centre.
             </div>
         </xpath>
     </template>
