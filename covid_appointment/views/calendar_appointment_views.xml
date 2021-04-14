@@ -26,6 +26,9 @@
                 <field name="user_id" options="{'no_create': True}" />
             </group>
             <field name="assignation_method" position="replace"/>
+            <xpath expr="//page[@name='slots']" position="inside">
+                <button string="Generate Slots" name="generate_time_slots" type="object" class="oe_highlight"/>
+            </xpath>
         </field>
     </record>
 

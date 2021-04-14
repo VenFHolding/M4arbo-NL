@@ -1,6 +1,9 @@
 <odoo>
     <!-- Added new input fields on create a online appointment. -->
     <template inherit_id="website_calendar.appointment_form" id="inherited_appointment_form">
+        <xpath expr="//h2[hasclass('o_page_header')]" position="replace">
+            <h2 class="o_page_header mt32">One more step to complete your Appointment</h2>
+        </xpath>
         <xpath expr="//form" position="before">
             <div t-if="error_msg" class="alert alert-danger" role="alert">
                 <p>
@@ -14,7 +17,9 @@
                     <label for="company_ref" class="col-md-4 col-form-label">Company Reference</label>
                     <div class="col-md-8">
                         <input type="char" class="form-control" name="company_ref"
-                               t-att-value="ref_partner_ref" readonly="readonly"/>
+                               t-att-value="ref_partner_ref" readonly="readonly" style="float:left;width:30%;"/>
+                        <input type="char" class="form-control" name="company_ref_name"
+                               t-att-value="ref_partner_name" readonly="readonly" style="float:right;width:67%;"/>
                     </div>
                 </div>
             </div>
@@ -66,7 +71,7 @@
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="o_website_calendar">
                 <div class="oe_structure container mb128">
-                    <h1 class="o_page_header">Title: <span t-esc="event.patient_partner_id.name"/>, Here is your appointment details.</h1>
+                    <h1 class="o_page_header"><span t-esc="event.patient_partner_id.name"/>, Here is your appointment details.</h1>
                     <div class="alert alert-info" t-if="message=='new'" role="status">
                         <p>
                             <strong>Your appointment has been successfully booked!</strong>
@@ -107,7 +112,7 @@
                                 <label style="font-weight: bold;">Location:</label>
                             </div>
                             <div class="col-md-10">
-                                <t t-esc="event.location"/>
+                                <t t-esc="event.appointment_type_id.name"/>
                             </div>
                         </div>
                         <div class="row">

@@ -4,6 +4,9 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+            <field name="email" position="attributes">
+                <attribute name="attrs">{'required': [('company_type', '=', 'company')]}</attribute>
+            </field>
             <xpath expr="//field[@name='type']" position="before">
                 <field name="gender"
                        attrs="{'invisible': ['|', ('company_type', '=', 'company'), ('type', '!=', 'contact')]}"/>
