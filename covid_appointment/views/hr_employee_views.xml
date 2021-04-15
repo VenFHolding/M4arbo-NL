@@ -5,7 +5,8 @@
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
         	<field name="parent_id" position="after">
-        		<field name="appointment_type_id"/>
+        		<field name="is_medical_staff"/>
+        		<field name="appointment_type_id" attrs="{'required': [('is_medical_staff', '=', True)], 'invisible': [('is_medical_staff', '=', False)]}"/>
         	</field>
         </field>
     </record>

@@ -52,8 +52,8 @@
         <xpath expr="//t[@t-foreach='appointment_type.question_ids']" position="after">
             <div class="form-group row col-xl-8">
                 <div class="col-md-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="Conditions" id="flexCheckChecked" required="1" name="Terms"/>
+                    <div id="term_condition_div" class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Conditions" id="flexCheckChecked" name="Terms"/>
                         <label class="form-check-label" for="flexCheckChecked">
                             "I have read and agree to the following"
                             <a target="_blank" href="/website/covid/policy" rel="nofollow noopener ugc">Terms and Policy
@@ -107,7 +107,7 @@
                                 hour<t t-if="event.duration>=2">s</t>
                             </div>
                         </div>
-                        <div t-if="event.location" class="row">
+                        <div class="row">
                             <div class="col-md-2 text-left">
                                 <label style="font-weight: bold;">Location:</label>
                             </div>
