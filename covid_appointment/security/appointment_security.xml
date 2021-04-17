@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-	<record id="group_appointment_own_document" model="res.groups">
+    <record id="group_appointment_own_document" model="res.groups">
         <field name="name">Own Appointments Only</field>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         <field name="category_id" ref="base.module_category_marketing_online_appointment"/>
     </record>
 
     <record id="website_calendar.group_calendar_manager" model="res.groups">
-    	<field name="implied_ids" eval="[(4, ref('group_appointment_own_document'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_appointment_own_document'))]"/>
     </record>
 
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'calendar'), ('name', '=', 'calendar_event_rule_employee')]">
+            </value>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+    <record id="calendar.calendar_event_rule_employee" model="ir.rule">
+        <field name="active">False</field>
+    </record>
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'calendar'), ('name', '=', 'calendar_event_rule_employee')]">
+            </value>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
 </odoo>

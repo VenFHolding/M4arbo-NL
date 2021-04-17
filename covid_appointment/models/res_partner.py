@@ -13,16 +13,6 @@ class InheritPartner(models.Model):
                                     ('dob', '!=', False)])
         partner_recs.calculate_age()
 
-    def update_all_test_center(self):
-        """
-            This method will filter out the partners which company type will be company.
-            And add all the covid test center in the test center column.
-        """
-        for partner in self.filtered(lambda p: p.company_type != 'person'):
-            appointment_centre_ids = self.env['calendar.appointment.type'].search(
-                [('is_published', '=', True)]).ids
-            partner.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
-
     def get_partner_age(self):
         today = datetime.now().date()
         age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
@@ -48,6 +38,18 @@ class InheritPartner(models.Model):
     restrict_country_ids = fields.Many2many(
         'res.country', string="Restrict Countries",
         help="Keep empty to display all countries on create appointment, otherwise you display selected countries.")
+    add_all_test_centre = fields.Boolean(string="Add All Test Centre")
+
+    @api.onchange('add_all_test_centre')
+    def _onchange_add_all_test_centre(self):
+        """
+            This method will filter out the partners which company type will be company.
+            And add all the covid test center in the test center column.
+        """
+        if self.add_all_test_centre:
+            appointment_centre_ids = self.env['calendar.appointment.type'].search(
+                [('is_published', '=', True)]).ids
+            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """

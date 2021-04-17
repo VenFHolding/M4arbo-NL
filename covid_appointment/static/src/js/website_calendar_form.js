@@ -5,9 +5,10 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
     var websiteCalendarForm = publicWidget.registry.websiteCalendarForm;
 
     return websiteCalendarForm.include({
-        events: _.extend({}, websiteCalendarForm.events, {
-            'click button[type="submit"]': '_check_form_data'
-        }),
+        events: {
+            'click button[type="submit"]': '_check_form_data',
+            'change .appointment_submit_form select[name="country_id"]': '_onCountryChange',
+        },
         _check_form_data: function(ev){
             var validate = true;
             var phone_val = $('#phone_field').val();
