@@ -24,6 +24,12 @@
                 </div>
             </div>
         </xpath>
+        <xpath expr="//input[@name='name']" position="replace">
+            <input type="char" class="form-control" name="name" id="partner_name" t-att-value="'name' in partner_data and partner_data['name']"/>
+        </xpath>
+        <xpath expr="//input[@name='email']" position="replace">
+            <input type="char" id="partner_email" class="form-control" name="email" t-att-value="'email' in partner_data and partner_data['email']"/>
+        </xpath>
         <xpath expr="//select[@name='country_id']" position="replace">
             <select name="country_id" class="form-control" required="1" id="country_field">
                 <t t-foreach="countries or []" t-as="country">
@@ -45,7 +51,7 @@
             <div class="form-group row col-xl-8">
                 <label for="dob_datepicker" class="col-md-4 col-form-label">Date of Birth</label>
                 <div class="col-md-8">
-                    <input id="dob_datepicker_calendar_form" name="dob_datepicker" type="date" class="form-control o_website_form_input o_website_form_date" required="1"/>
+                    <input id="dob_datepicker_calendar_form" name="dob_datepicker" type="date" class="form-control o_website_form_input o_website_form_date"/>
                 </div>
             </div>
         </xpath>

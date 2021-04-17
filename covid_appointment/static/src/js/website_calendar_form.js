@@ -9,9 +9,13 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
             'click button[type="submit"]': '_check_form_data'
         }),
         _check_form_data: function(ev){
+            var validate = true;
             var phone_val = $('#phone_field').val();
-            var filter = /^((\+[1-9]{1,4}[ \-]*)|(\([0-9]{2,3}\)[ \-]*)|([0-9]{2,4})[ \-]*)*?[0-9]{3,4}?[ \-]*[0-9]{3,4}?$/;
-            if (filter.test(phone_val)) {
+            var partner_email = $('#partner_email').val();
+            var dob_val = $('#dob_datepicker_calendar_form').val();
+            var partner_name = $('#partner_name').val();
+            var phone_pattern = /^((\+[1-9]{1,4}[ \-]*)|(\([0-9]{2,3}\)[ \-]*)|([0-9]{2,4})[ \-]*)*?[0-9]{3,4}?[ \-]*[0-9]{3,4}?$/;
+            if (phone_pattern.test(phone_val)) {
                 if(phone_val.length==14){
                    var validate = true;
                 }
@@ -19,22 +23,41 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
                     var validate = false;
                     $('#phone_error_msg').remove();
                     $("<p id='phone_error_msg' style='color:red;'>Please put 10 digit mobile number.</p>").insertAfter("#phone_field");
-                    ev.preventDefault();
                 }
             }
             else {
                 var validate = false;
                 $('#phone_error_msg').remove();
                 $("<p id='phone_error_msg' style='color:red;'>Please Add valid phone number.</p>").insertAfter("#phone_field");
-                ev.preventDefault();
-            }
-            if (validate){
-                $('#phone_error_msg').remove();
             }
             if (!$('#flexCheckChecked').prop('checked')){
+                var validate = false;
                 $('#term_error_msg').remove();
                 $("<p id='term_error_msg' style='color:red;'>Accept terms and conditions to proceed.</p>").appendTo("#term_condition_div");
-                ev.preventDefault();   
+            }
+            if (!dob_val){
+                var validate = false;
+                $('#dob_error_msg').remove();
+                $("<p id='dob_error_msg' style='color:red;'>Please enter your Date of Birth.</p>").insertAfter("#dob_datepicker_calendar_form");
+            }
+            if (!partner_name){
+                var validate = false;
+                $('#partner_name_error_msg').remove();
+                $("<p id='partner_name_error_msg' style='color:red;'>Please enter your name.</p>").insertAfter("#partner_name");
+            }
+            if (!partner_email){
+                var validate = false;
+                    $('#partner_email_error_msg').remove();
+                    $("<p id='partner_email_error_msg' style='color:red;'>Please enter email address.</p>").insertAfter("#partner_email");
+            }
+            if (!validate){
+                ev.preventDefault();
+            }
+            else {
+                $('#phone_error_msg').remove();
+                $('#term_error_msg').remove();
+                $('#phone_error_msg').remove();
+                $('#dob_error_msg').remove();
             }
 
         },
@@ -56,7 +79,7 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
             var country_length = $('#country_field option').length;
             if (country_length == 1){
                 $("#country_field").val($("#country_field option:first").val());
-                $('#country_field').attr("disabled", true);
+                $('#country_field').attr("readonly", true);
             }
         },
     });

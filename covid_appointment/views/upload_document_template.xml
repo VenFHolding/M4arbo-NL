@@ -49,6 +49,11 @@
                                     <p><strong>You can't cancel the appointment after print label.</strong></p>
                                 </div>
                             </div>
+                            <div id="fill_data_error_msg" t-if="disable_fill_data and is_internal_user" class="col-12 mt-3">
+                                <div class="alert alert-danger" role="alert">
+                                    <p><strong>Medical staff is not assigned to this appointment. Please assign medical staff to enable fill data functionality.</strong></p>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Form for cancel the event. -->
