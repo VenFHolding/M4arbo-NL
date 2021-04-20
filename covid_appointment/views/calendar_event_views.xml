@@ -57,12 +57,12 @@
                 <field name="name" string="Subject"/>
                 <field name="create_date" string="Create Date"/>
                 <field name="allday" invisible="True"/>
-                <field name="start" string="Start Date"/>
-                <field name="stop" string="End Date"/>
+                <field name="appointment_start_time"/>
+                <field name="appointment_end_time"/>
                 <field name="patient_partner_id"/>
                 <field name="location"/>
                 <field name="state" invisible="True"/>
-                <field name="duration" widget="float_time"/>
+                <field name="appointment_duration" widget="float_time"/>
                 <field name="state"/>
                 <field name="covid_status"/>
                 <field name="message_needaction" invisible="1"/>

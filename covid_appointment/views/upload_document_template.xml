@@ -8,6 +8,10 @@
                         <h2>Scanned Appointment Details:</h2>
                         <table class="table">
                             <tr>
+                                <td style="width:35%"><b>Appointment ID:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.event_name"/></td>
+                            </tr>
+                            <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
                                 <td style="width:65%"><t t-esc="event_rec.partner_ids[0].name"/></td>
                             </tr>
@@ -142,7 +146,7 @@
                                                     </tr>
                                                     <tr class="check_postive">
                                                         <td>
-                                                            <strong>2). Is Patient is covid positive?</strong>
+                                                            <strong>2). Is Patient covid positive?</strong>
                                                         </td>
                                                     </tr>
                                                     <tr class="check_postive">
@@ -196,6 +200,10 @@
                             <h2>Scanned Appointment Details:</h2>
                         </t>
                         <table class="table">
+                            <tr>
+                                <td style="width:35%"><b>Appointment ID:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.event_name"/></td>
+                            </tr>
                             <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
                                 <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
