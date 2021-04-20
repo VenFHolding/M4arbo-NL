@@ -51,4 +51,25 @@
             </p>
         </field>
     </record>
+
+    <record id="calendar_appointment_type_view_kanban_inherited" model="ir.ui.view">
+        <field name="inherit_id" ref="website_calendar.calendar_appointment_type_view_kanban"/>
+        <field name="model">calendar.appointment.type</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_calendar_meetings']/../.." position="replace">
+                <div class="row" stle="margin-left:-8px !important;">
+                    <div class="col-6">
+                        <div class="row">
+                            <button class="btn btn-primary" name="action_calendar_meetings" type="object"><field name="appointment_count"/> SCHEDULED</button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row">
+                            <button class="btn btn-primary" name="action_calendar_completed_meetings" type="object"><field name="completed_appointment_count"/> COMPLETED</button>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
 </odoo>

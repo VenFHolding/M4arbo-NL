@@ -116,9 +116,12 @@ class InheritPartner(models.Model):
         for report_data in appointment_report_data:
             partner_rec = self.env['res.partner'].browse([report_data.get('partner_id')])
             calendar_event_rec = self.env['calendar.event'].sudo().browse([report_data.get('event_id')])
+            gender = partner_rec.gender
+            if gender:
+                gender = gender.capitalize()
             sheet.write(row, col, sr_no)
             sheet.write(row, col+1, partner_rec.name)
-            sheet.write(row, col+2, partner_rec.gender.capitalize())
+            sheet.write(row, col+2, gender)
             sheet.write(row, col+3, partner_rec.age)
             sheet.write(row, col+4, str(calendar_event_rec.start_datetime))
             sheet.write(row, col+5, calendar_event_rec.appointment_type_id.name)

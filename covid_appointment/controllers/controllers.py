@@ -24,6 +24,7 @@ class DownloadReport(CustomerPortal):
     @http.route('/download/covid_test/label/<model("calendar.event"):event>', type='http', auth='user', website=True)
     def download_covid_test_label(self, event,**kw):
         event.is_label_printed = True
+        event.appointment_start_time = datetime.now().replace(microsecond=0) 
         return self._show_report(model=event, report_type='pdf', report_ref='covid_appointment.calendar_event_label_report', download=False)
 
 
@@ -209,8 +210,8 @@ class CovidAppointments(http.Controller):
             if event.sudo().attendee_ids:
                 event.sudo().attendee_ids._send_mail_to_attendees(
                     'covid_appointment.email_template_covid_cancel_appointment')
-
-            return request.redirect('/website/calendar?message=cancel')
+            url = '/covid_report/' + event.access_token
+            return request.redirect(url)
 
         if event.is_label_printed:
             return request.redirect('/covid_report/'+ event.access_token +'?no_cancel=True')
@@ -254,7 +255,7 @@ class CovidAppointments(http.Controller):
                     'covid_result': event_report_rec.state
                 }
                 invitation_template.with_context(context).send_mail(attendee.id, notif_layout='mail.mail_notification_light')
-
+            event.appointment_end_time = datetime.now().replace(microsecond=0)
         else:
             event.sudo().write({
                 'state': 'not achieved',
