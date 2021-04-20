@@ -11,7 +11,7 @@ odoo.define('website.backend.button.inherited', function (require) {
         _onClick: function(){
             if (this.record.model == 'calendar.appointment.type'){
                 if (this.record.data.employee_ids.count == 0){
-                    var $content = $('<p/>').text(_t('Please add Medical Staff before publish.'));
+                    var $content = $('<p/>').text(_t('Please add Employees before publish the test centre.'));
                     return new Dialog(this, {
                         title: 'Validation Error',
                         size: 'medium',

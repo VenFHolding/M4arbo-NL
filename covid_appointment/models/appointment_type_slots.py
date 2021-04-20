@@ -6,6 +6,9 @@ class InheritAppointmentType(models.Model):
 
     user_id = fields.Many2one('res.users', string="User",
         domain=lambda self: [('groups_id', 'in', self.env.ref('base.group_user').id)])
+    medical_staff_employee_ids = fields.One2many('hr.employee', 'appointment_type_id',
+                                                 string="Medical Staff",
+                                                 domain=[('is_medical_staff', '=', True)])
 
     def generate_time_slots(self):
 

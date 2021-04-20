@@ -16,14 +16,19 @@
             <field name="appointment_tz" position="attributes">
                 <attribute name="string">Timezone *</attribute>
             </field>
-        	<xpath expr="//page[@name='schedule_availability']//separator" position="replace">
-        		<separator string="Medical Staff"/>
-        	</xpath>
-        	<xpath expr="//page[@name='schedule_availability']//field[@name='employee_ids']/tree/field[@name='name']" position="attributes">
-        		<attribute name="string">Medical Staff Name</attribute>
-        	</xpath>
+            <xpath expr="//page[@name='schedule_availability']" position="after">
+                <page name="medical_staff" string="Medical Staff">
+                    <field name="medical_staff_employee_ids" context="{'default_is_medical_staff': True, 'default_appointment_type_id': active_id}" readonly="1">
+                        <tree>
+                            <field name="name"/>
+                            <field name="resource_calendar_id"/>
+                            <field name="is_medical_staff"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
             <group name="left_details" position="inside">
-                <field name="user_id" options="{'no_create': True}" />
+                <field name="user_id" options="{'no_create': True}" required="1"/>
             </group>
             <field name="assignation_method" position="replace"/>
             <xpath expr="//page[@name='slots']" position="inside">

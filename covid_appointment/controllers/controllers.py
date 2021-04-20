@@ -123,7 +123,7 @@ class CovidAppointments(http.Controller):
         if event_rec:
             # If event is in confirmed state then event can be cancelled or test center can fill the data
             # for the covid status.
-            if not event_rec.employee_id:
+            if not event_rec.employee_id and event_rec.is_label_printed:
                 data.update({
                     'disable_fill_data': 'disabled',
                 })

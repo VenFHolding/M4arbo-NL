@@ -13,16 +13,6 @@ class InheritPartner(models.Model):
                                     ('dob', '!=', False)])
         partner_recs.calculate_age()
 
-    def update_all_test_center(self):
-        """
-            This method will filter out the partners which company type will be company.
-            And add all the covid test center in the test center column.
-        """
-        for partner in self.filtered(lambda p: p.company_type != 'person'):
-            appointment_centre_ids = self.env['calendar.appointment.type'].search(
-                [('is_published', '=', True)]).ids
-            partner.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
-
     def get_partner_age(self):
         today = datetime.now().date()
         age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
@@ -48,27 +38,39 @@ class InheritPartner(models.Model):
     restrict_country_ids = fields.Many2many(
         'res.country', string="Restrict Countries",
         help="Keep empty to display all countries on create appointment, otherwise you display selected countries.")
+    add_all_test_centre = fields.Boolean(string="Add All Test Centre")
+
+    @api.onchange('add_all_test_centre')
+    def _onchange_add_all_test_centre(self):
+        """
+            This method will filter out the partners which company type will be company.
+            And add all the covid test center in the test center column.
+        """
+        if self.add_all_test_centre:
+            appointment_centre_ids = self.env['calendar.appointment.type'].search(
+                [('is_published', '=', True)]).ids
+            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """
         data_dict = {}
         message = ''
-        date_start = date_start - timedelta(days=14)
+        covid_positive_date_start = date_start - timedelta(days=14)
         if Partner:
             partner_report = self.env['event.report'].sudo().search([('partner_id', '=', Partner.id),
-                                                                     ('create_date', '>=', date_start),
+                                                                     ('create_date', '>=', covid_positive_date_start),
                                                                      ('state', '=', 'positive')])
             if partner_report:
                 message += "You are Restricted to test for 14 days since your result was Positive."
                 data_dict['message'] = message
                 return data_dict
 
+            date_start = date_start - timedelta(hours=48)
             domain = [('state', '=', 'open'),
                       ('appointment_type_id', '!=', False),
-                      ('partner_ids', 'in', Partner.ids)]
+                      ('patient_partner_id', '=', Partner.id),
+                      ('start_datetime', '>', date_start)]
             partner_event = self.env['calendar.event'].sudo().search(domain)
-            if self.env.user.partner_id.id == Partner.id:
-                partner_event = partner_event.filtered(lambda event: len(event.partner_ids) == 1)
             if partner_event:
                 message += "The Appointment is already scheduled for you. \n " \
                                     "You can Cancel the prior appointment and reschedul it again."
