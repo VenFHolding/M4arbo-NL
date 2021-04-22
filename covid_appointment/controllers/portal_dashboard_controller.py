@@ -280,6 +280,7 @@ class CustomerPortal(CustomerPortal):
         for event_rec in calendar_event_recs:
             event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
             event_data = {
+                'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                 'test_center': event_rec.appointment_type_id.name,
                 'partner_name': event_rec.patient_partner_id.name,

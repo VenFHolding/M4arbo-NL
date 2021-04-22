@@ -96,6 +96,14 @@
                       <div class="col-md-9">
                         <div class="row">
                             <div class="col-md-2 text-left">
+                                <label style="font-weight: bold;">Appointment ID:</label>
+                            </div>
+                            <div class="col-md-10">
+                                <t t-esc="event.event_name"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 text-left">
                                 <label style="font-weight: bold;">When:</label>
                             </div>
                             <div class="col-md-10">

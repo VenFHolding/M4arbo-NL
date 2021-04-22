@@ -1,11 +1,21 @@
 import io
 from odoo import api, fields, models
 from datetime import datetime, timedelta
-from odoo.tools.misc import xlsxwriter
+import xlsxwriter
 
 
 class InheritPartner(models.Model):
-    _inherit = "res.partner"
+    _inherit = "res.partner"    
+
+    @api.model
+    def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
+        """
+            On Test Centre Login, displayed only test centre's partner.
+        """
+        user = self.env.user
+        if user.user_has_groups('covid_appointment.group_appointment_own_document') and not user.user_has_groups('website_calendar.group_calendar_manager'):
+            domain += [('id', '=', user.partner_id.id)]
+        return super(InheritPartner, self).search_read(domain, fields, offset, limit, order)
 
     def _cron_execute_update_age(self):
         partner_recs = self.search([('company_type', '=', 'person'),
@@ -86,47 +96,57 @@ class InheritPartner(models.Model):
         # Write header
         header_format = workbook.add_format({'align': 'center', 'bold': True, 'valign':   'vcenter', 'font_name': 'Liberation Sans'})
         table_header_format = workbook.add_format({'bold': True, 'border': 1, 'font_name': 'Liberation Sans'})
+        partner_detail_format = workbook.add_format({'bold': True, 'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff'})
+        partner_detail_data_format = workbook.add_format({'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff', 'align': 'left'})
         sheet.set_column(0, 0, 5)
-        sheet.set_column(1, 1, 25)
-        sheet.set_column(4, 4, 25)
+        sheet.set_column(1, 1, 27)
+        sheet.set_column(2, 2, 20)
+        sheet.set_column(3, 3, 25)
+        sheet.set_column(4, 4, 15)
         sheet.set_column(5, 5, 20)
-        sheet.set_column(6, 6, 20)
         sheet.merge_range(0, 0, 1, 6, 'Employee’s Covid Status Report', header_format)
-        sheet.write(3, 0, "Sr. No.", table_header_format)
-        sheet.write(3, 1, "Name", table_header_format)
-        sheet.write(3, 2, "Gender", table_header_format)
-        sheet.write(3, 3, "Age", table_header_format)
-        sheet.write(3, 4, "Last Appointment Date", table_header_format)
-        sheet.write(3, 5, "Test Centre", table_header_format)
-        sheet.write(3, 6, "Covid Status", table_header_format)
 
         # Write Data
-        sql_query = """
-            SELECT er1.partner_id AS partner_id,
-            er2.state AS covid_status,
-            er2.calendar_event_id AS event_id
-            FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
-            LEFT JOIN event_report AS er2 ON er2.id = er1.id
-        """
-        self._cr.execute(sql_query)
-        appointment_report_data = self._cr.dictfetchall()
-        sr_no = 1
-        row = 4
-        col = 0
-        for report_data in appointment_report_data:
-            partner_rec = self.env['res.partner'].browse([report_data.get('partner_id')])
-            calendar_event_rec = self.env['calendar.event'].sudo().browse([report_data.get('event_id')])
+        row = 3
+        for partner_rec in self.child_ids:
+            col = 0
+            sr_no = 1
+            sheet.write(row, col, "Name", partner_detail_format)
+            sheet.write(row, col+1, partner_rec.name, partner_detail_data_format)
+            sheet.write(row, col+2, "Gender", partner_detail_format)
             gender = partner_rec.gender
             if gender:
                 gender = gender.capitalize()
-            sheet.write(row, col, sr_no)
-            sheet.write(row, col+1, partner_rec.name)
-            sheet.write(row, col+2, gender)
-            sheet.write(row, col+3, partner_rec.age)
-            sheet.write(row, col+4, str(calendar_event_rec.start_datetime))
-            sheet.write(row, col+5, calendar_event_rec.appointment_type_id.name)
-            sheet.write(row, col+6, report_data.get('covid_status').capitalize())
-            sr_no += 1
+            sheet.write(row, col+3, gender, partner_detail_data_format)
+            row += 1
+            sheet.write(row, col, "Email", partner_detail_format)
+            sheet.write(row, col+1, partner_rec.email, partner_detail_data_format)
+            sheet.write(row, col+2, "Age", partner_detail_format)
+            sheet.write(row, col+3, partner_rec.age, partner_detail_data_format)
+            row += 1
+            sheet.write(row, col, "Sr. No.", table_header_format)
+            sheet.write(row, col+1, "Appointment ID", table_header_format)
+            sheet.write(row, col+2, "Appointment Date", table_header_format)
+            sheet.write(row, col+3, "Test Centre", table_header_format)
+            sheet.write(row, col+4, "Appointment Status", table_header_format)
+            sheet.write(row, col+5, "Covid Status", table_header_format)
+            row += 1
+
+            calendar_event_recs = self.env['calendar.event'].sudo().search(
+                [('patient_partner_id', '=', partner_rec.id)])
+            for event_rec in calendar_event_recs:
+                covid_status = event_rec.covid_status
+                if covid_status:
+                    covid_status = covid_status.capitalize()
+                sheet.write(row, col, sr_no)
+                sheet.write(row, col+1, event_rec.event_name)
+                sheet.write(row, col+2, str(event_rec.start_datetime))
+                sheet.write(row, col+3, event_rec.appointment_type_id.name)
+                sheet.write(row, col+4, event_rec.state)
+                sheet.write(row, col+5, covid_status or '')
+                row += 1
+                sr_no += 1
+
             row += 1
 
         workbook.close()

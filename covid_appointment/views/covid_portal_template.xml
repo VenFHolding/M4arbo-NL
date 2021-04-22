@@ -163,6 +163,7 @@
             <div class="oe_structure container mb128">
                 <table class="table table-striped">
                     <tr>
+                        <th>Appointment ID</th>
                         <th>Date &amp; Time</th>
                         <th>Company Ref.</th>
                         <th>Test Center</th>
@@ -172,6 +173,7 @@
                     </tr>
                     <t t-if="calendar_event_data">
                         <tr t-foreach="calendar_event_data" t-as="data">
+                            <td><t t-esc="data['appointment_id']"/></td>
                             <td><t t-esc="data['date']"/></td>
                             <td><t t-esc="data['company_ref']"/></td>
                             <td><t t-esc="data['test_center']"/></td>

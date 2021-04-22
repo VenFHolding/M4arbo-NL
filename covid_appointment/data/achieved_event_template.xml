@@ -25,7 +25,7 @@
         					</p>
         					<p>
         						<b>Location:</b><br/>
-        						${object.event_id.Location}
+        						${object.event_id.name}
         					</p>
         					<p>
         						Please reschedule the appointment again.
