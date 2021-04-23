@@ -6,6 +6,14 @@ from odoo.exceptions import ValidationError
 class CalendarEvent(models.Model):
     _inherit = "calendar.event"
 
+    def _cron_execute_do_expire(self):
+        current_date_time = datetime.now().replace(microsecond=0) + timedelta(hours=1)
+        appointment_recs = self.search([('state', '=', 'open'),
+                                        ('start_datetime', '<=', current_date_time)])
+        appointment_recs.write({
+            'is_expired': True,
+        })
+
     def _cron_execute_archive_event(self):
         """
             This method is called from scheduler to make invalid the QR code.
@@ -47,6 +55,7 @@ class CalendarEvent(models.Model):
                                      ('negative', 'Negative'),
                                      ('failed', 'Test Failed')],
                                     string="Covid State", readonly=1)
+    is_expired = fields.Boolean(string="Event Expired", default=False, copy=False)
     appointment_start_time = fields.Datetime(string="Appointment Start Time")
     appointment_end_time = fields.Datetime(string="Appointment End Time")
     appointment_duration = fields.Float(string="Appointment Duration", compute="get_duration")

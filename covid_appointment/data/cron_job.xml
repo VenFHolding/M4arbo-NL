@@ -23,4 +23,16 @@
         <field name="code">model._cron_execute_update_age()</field>
         <field name="state">code</field>
     </record>
+
+    <record id="ir_cron_appointment_expire" model="ir.cron">
+        <field name="name">Auto Expire Covid Appointments</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="nextcall" eval="(DateTime.now().replace(hour=0, minute=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="doall" eval="False"/>
+        <field name="model_id" ref="model_calendar_event"/>
+        <field name="code">model._cron_execute_do_expire()</field>
+        <field name="state">code</field>
+    </record>
 </odoo>

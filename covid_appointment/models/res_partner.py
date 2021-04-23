@@ -59,7 +59,7 @@ class InheritPartner(models.Model):
         if self.add_all_test_centre:
             appointment_centre_ids = self.env['calendar.appointment.type'].search(
                 [('is_published', '=', True)]).ids
-            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
+            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)]
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """
@@ -118,6 +118,8 @@ class InheritPartner(models.Model):
             if gender:
                 gender = gender.capitalize()
             sheet.write(row, col+3, gender, partner_detail_data_format)
+            sheet.write(row, col+4, "Contact No.", partner_detail_format)
+            sheet.write(row, col+5, partner_rec.mobile, partner_detail_data_format)
             row += 1
             sheet.write(row, col, "Email", partner_detail_format)
             sheet.write(row, col+1, partner_rec.email, partner_detail_data_format)
