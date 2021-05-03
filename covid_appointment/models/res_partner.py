@@ -96,43 +96,43 @@ class InheritPartner(models.Model):
         # Write header
         header_format = workbook.add_format({'align': 'center', 'bold': True, 'valign':   'vcenter', 'font_name': 'Liberation Sans'})
         table_header_format = workbook.add_format({'bold': True, 'border': 1, 'font_name': 'Liberation Sans'})
-        partner_detail_format = workbook.add_format({'bold': True, 'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff'})
-        partner_detail_data_format = workbook.add_format({'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff', 'align': 'left'})
+        # partner_detail_format = workbook.add_format({'bold': True, 'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff'})
+        # partner_detail_data_format = workbook.add_format({'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff', 'align': 'left'})
         sheet.set_column(0, 0, 5)
         sheet.set_column(1, 1, 27)
-        sheet.set_column(2, 2, 20)
-        sheet.set_column(3, 3, 25)
-        sheet.set_column(4, 4, 15)
-        sheet.set_column(5, 5, 20)
-        sheet.merge_range(0, 0, 1, 6, 'Employee’s Covid Status Report', header_format)
+        sheet.set_column(2, 2, 10)
+        sheet.set_column(3, 3, 20)
+        sheet.set_column(4, 4, 27)
+        sheet.set_column(5, 5, 5)
+        sheet.set_column(6, 6, 12)
+        sheet.set_column(7, 7, 20)
+        sheet.set_column(8, 8, 23)
+        sheet.set_column(9, 9, 17)
+        sheet.set_column(10, 10, 15)
+        sheet.merge_range(0, 0, 1, 8, 'Employee’s Covid Status Report', header_format)
 
         # Write Data
         row = 3
+        
+        col = 0
+        sr_no = 1
+
+        sheet.write(row, col, "Sr. No.", table_header_format)
+        sheet.write(row, col+1, "Name", table_header_format)
+        sheet.write(row, col+2, "Gender", table_header_format)
+        sheet.write(row, col+3, "Contact No.", table_header_format)
+        sheet.write(row, col+4, "Email", table_header_format)
+        sheet.write(row, col+5, "Age", table_header_format)
+        sheet.write(row, col+6, "Appointment ID", table_header_format)
+        sheet.write(row, col+7, "Appointment Date", table_header_format)
+        sheet.write(row, col+8, "Test Centre", table_header_format)
+        sheet.write(row, col+9, "Appointment Status", table_header_format)
+        sheet.write(row, col+10, "Covid Status", table_header_format)
+        row += 1
         for partner_rec in self.child_ids:
-            col = 0
-            sr_no = 1
-            sheet.write(row, col, "Name", partner_detail_format)
-            sheet.write(row, col+1, partner_rec.name, partner_detail_data_format)
-            sheet.write(row, col+2, "Gender", partner_detail_format)
             gender = partner_rec.gender
             if gender:
                 gender = gender.capitalize()
-            sheet.write(row, col+3, gender, partner_detail_data_format)
-            sheet.write(row, col+4, "Contact No.", partner_detail_format)
-            sheet.write(row, col+5, partner_rec.mobile, partner_detail_data_format)
-            row += 1
-            sheet.write(row, col, "Email", partner_detail_format)
-            sheet.write(row, col+1, partner_rec.email, partner_detail_data_format)
-            sheet.write(row, col+2, "Age", partner_detail_format)
-            sheet.write(row, col+3, partner_rec.age, partner_detail_data_format)
-            row += 1
-            sheet.write(row, col, "Sr. No.", table_header_format)
-            sheet.write(row, col+1, "Appointment ID", table_header_format)
-            sheet.write(row, col+2, "Appointment Date", table_header_format)
-            sheet.write(row, col+3, "Test Centre", table_header_format)
-            sheet.write(row, col+4, "Appointment Status", table_header_format)
-            sheet.write(row, col+5, "Covid Status", table_header_format)
-            row += 1
 
             calendar_event_recs = self.env['calendar.event'].sudo().search(
                 [('patient_partner_id', '=', partner_rec.id)])
@@ -141,15 +141,18 @@ class InheritPartner(models.Model):
                 if covid_status:
                     covid_status = covid_status.capitalize()
                 sheet.write(row, col, sr_no)
-                sheet.write(row, col+1, event_rec.event_name)
-                sheet.write(row, col+2, str(event_rec.start_datetime))
-                sheet.write(row, col+3, event_rec.appointment_type_id.name)
-                sheet.write(row, col+4, event_rec.state)
-                sheet.write(row, col+5, covid_status or '')
+                sheet.write(row, col+1, partner_rec.name)
+                sheet.write(row, col+2, gender)
+                sheet.write(row, col+3, partner_rec.mobile)
+                sheet.write(row, col+4, partner_rec.email)
+                sheet.write(row, col+5, partner_rec.age)
+                sheet.write(row, col+6, event_rec.event_name)
+                sheet.write(row, col+7, str(event_rec.start_datetime))
+                sheet.write(row, col+8, event_rec.appointment_type_id.name)
+                sheet.write(row, col+9, event_rec.state)
+                sheet.write(row, col+10, covid_status or '')
                 row += 1
                 sr_no += 1
-
-            row += 1
 
         workbook.close()
         output.seek(0)

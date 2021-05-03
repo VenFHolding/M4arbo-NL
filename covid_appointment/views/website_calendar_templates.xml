@@ -41,7 +41,8 @@
             <div class="form-group row col-xl-8">
                 <label for="gender" class="col-md-4 col-form-label">Gender</label>
                 <div class="col-md-8">
-                    <select name="gender" class="form-control" required="1">
+                    <select id="gender_calendar_form" name="gender" class="form-control" required="1">
+                        <option value="" disabled="disabled" selected="selected">Select Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>

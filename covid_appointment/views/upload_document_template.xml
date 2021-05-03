@@ -13,7 +13,7 @@
                             </tr>
                             <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
-                                <td style="width:65%"><t t-esc="event_rec.partner_ids[0].name"/></td>
+                                <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
                             </tr>
                             <tr>
                                 <td style="width:35%"><b>Test Center:</b></td>

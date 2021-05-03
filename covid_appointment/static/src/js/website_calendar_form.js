@@ -12,6 +12,7 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
         _check_form_data: function(ev){
             var validate = true;
             var phone_val = $('#phone_field').val();
+            var gender_val = $('#gender_calendar_form').val();
             var partner_email = $('#partner_email').val();
             var dob_val = $('#dob_datepicker_calendar_form').val();
             var partner_name = $('#partner_name').val();
@@ -72,6 +73,15 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
                     $('#partner_email_error_msg').remove();
                 }              
             }
+            if (!gender_val){
+                validate = false;
+                $('#partner_gender_error_msg').remove();
+                $("<p id='partner_gender_error_msg' style='color:red;'>Please select gender.</p>").insertAfter("#gender_calendar_form");
+
+            }
+            else{
+                $('#partner_gender_error_msg').remove();
+            }
             if (!validate){
                 ev.preventDefault();
             }
@@ -80,6 +90,7 @@ odoo.define('covid_appointment.website_calendar_form', function (require) {
                 $('#term_error_msg').remove();
                 $('#phone_error_msg').remove();
                 $('#dob_error_msg').remove();
+                $('#partner_gender_error_msg').remove();
             }
 
         },

@@ -21,7 +21,7 @@ class CustomerPortal(CustomerPortal):
         total_login_partner_child = len(partner.child_ids.filtered(
             lambda contact: contact.type == 'contact'))
         total_covid_appointments = request.env['calendar.event'].search_count(
-            [('partner_ids', 'in', partner.ids)])
+            [('patient_partner_id', 'in', partner.ids)])
         values.update({
             'total_login_partner_child': total_login_partner_child,
             'total_covid_appointments': total_covid_appointments
@@ -59,6 +59,7 @@ class CustomerPortal(CustomerPortal):
         for event_rec in calendar_event_recs:
             event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
             event_data = {
+                'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                 'test_center': event_rec.appointment_type_id.name,
                 'partner_name': event_rec.partner_ids[0].name,

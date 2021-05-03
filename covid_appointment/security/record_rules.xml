@@ -51,10 +51,24 @@
         <field name="groups" eval="[(4, ref('covid_appointment.group_appointment_own_document'))]"/>
     </record>
 
+    <record id="event_report_test_centre_admin" model="ir.rule">
+        <field name="name">Admin Covid Report Test Centre</field>
+        <field name="model_id" ref="covid_appointment.model_covid_appointment_result_report"/>
+        <field name="domain_force">[(1 , '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('website_calendar.group_calendar_manager'))]"/>
+    </record>
+
     <record id="appointment_report_test_centre" model="ir.rule">
         <field name="name">Test Centre Appointments Report Record Rule</field>
         <field name="model_id" ref="covid_appointment.model_appointment_report"/>
         <field name="domain_force">[('appointment_type_id.user_id','=', user.id)]</field>
         <field name="groups" eval="[(4, ref('covid_appointment.group_appointment_own_document'))]"/>
+    </record>
+
+    <record id="appointment_report_test_centre_admin" model="ir.rule">
+        <field name="name">Admin Test Centre Appointments Report Record Rule</field>
+        <field name="model_id" ref="covid_appointment.model_appointment_report"/>
+        <field name="domain_force">[(1,'=', 1)]</field>
+        <field name="groups" eval="[(4, ref('website_calendar.group_calendar_manager'))]"/>
     </record>
 </odoo>
