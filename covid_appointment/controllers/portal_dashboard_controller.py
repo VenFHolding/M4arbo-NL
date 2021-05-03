@@ -181,7 +181,6 @@ class CustomerPortal(CustomerPortal):
             request.env.cr.execute(sql)
             partner_ids_data = request.env.cr.fetchall()
             partner_ids += [partner[0] for partner in partner_ids_data]
-            domain += [('id', 'in', partner_ids)]
             filter_data.update({
                 'positive_check': True
             })
@@ -228,6 +227,8 @@ class CustomerPortal(CustomerPortal):
             calendar_event_domain += [('start_datetime', '<=', date_to)]
 
         if calendar_event_domain:
+            if partner_ids:
+                calendar_event_domain += [('patient_partner_id', 'in', partner_ids)]
             calendar_event_recs = request.env['calendar.event'].sudo().search(calendar_event_domain)
             partner_ids += calendar_event_recs.mapped('partner_ids').ids
 

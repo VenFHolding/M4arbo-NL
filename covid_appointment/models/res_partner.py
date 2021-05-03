@@ -1,5 +1,6 @@
 import io
 from odoo import api, fields, models
+from odoo.http import request
 from datetime import datetime, timedelta
 import xlsxwriter
 
@@ -89,6 +90,70 @@ class InheritPartner(models.Model):
 
         return data_dict
 
+    def get_domain(self):
+        """
+            This function will be called when company user tries to download
+            covid report of thier employees.
+            This function will returns a domain based on filters, which
+            are applied by the user.
+        """
+        domain = [('parent_id', '=', self.id)]
+        calendar_event_domain = []
+        partner_ids = []
+
+        # Age filter domain
+        if request.session.get('contact_age_filter'):
+            min_age = int(request.session.get('contact_age_filter').split('-')[0])
+            max_age = int(request.session.get('contact_age_filter').split('-')[1])
+            domain += [('age', '>=', min_age), ('age', '<=', max_age)]
+        if request.session.get('max_age'):
+            domain += [('age', '<=', max_age)]
+        if request.session.get('min_age'):
+            domain += [('age', '>=', min_age)]
+        if request.session.get('gender_filter'):
+            gender = request.session.get('gender_filter')
+            domain += [('gender', '=', gender)]
+
+        # Covid status domain
+        if request.session.get('positive_check'):
+            sql = """
+                SELECT er1.partner_id FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
+                LEFT JOIN event_report AS er2 ON er2.id = er1.id
+                WHERE er2.state = 'positive'
+            """
+            request.env.cr.execute(sql)
+            partner_ids_data = request.env.cr.fetchall()
+            partner_ids += [partner[0] for partner in partner_ids_data]
+
+        if request.session.get('negative_check'):
+            sql = """
+                SELECT er1.partner_id FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
+                LEFT JOIN event_report AS er2 ON er2.id = er1.id
+                WHERE er2.state = 'negative'
+            """
+            request.env.cr.execute(sql)
+            partner_ids_data = request.env.cr.fetchall()
+            partner_ids += [partner[0] for partner in partner_ids_data]
+
+        # Appointment Date range domain
+        if request.session.get('app_date_from'):
+            date_from = request.session.get('app_date_from')
+            date_from += " 00:00:00"
+            calendar_event_domain += [('start_datetime', '>=', date_from)]
+        if request.session.get('app_date_to'):
+            date_to = request.session['app_date_to']
+            date_to += " 23:59:59"
+            calendar_event_domain += [('start_datetime', '<=', date_to)]
+        if calendar_event_domain:
+            calendar_event_recs = request.env['calendar.event'].sudo().search(calendar_event_domain)
+            partner_ids += calendar_event_recs.mapped('partner_ids').ids
+        
+        if partner_ids:
+            domain += [('id', 'in', partner_ids)]
+
+        return domain
+
+
     def get_xlsx_report(self):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
@@ -129,13 +194,30 @@ class InheritPartner(models.Model):
         sheet.write(row, col+9, "Appointment Status", table_header_format)
         sheet.write(row, col+10, "Covid Status", table_header_format)
         row += 1
-        for partner_rec in self.child_ids:
+        domain = self.get_domain()
+        partner_recs = self.sudo().search(domain)
+        for partner_rec in partner_recs:
             gender = partner_rec.gender
             if gender:
                 gender = gender.capitalize()
 
-            calendar_event_recs = self.env['calendar.event'].sudo().search(
-                [('patient_partner_id', '=', partner_rec.id)])
+            calendar_event_domain = [('patient_partner_id', '=', partner_rec.id)]
+            if request.session.get('app_date_from'):
+                date_from = request.session.get('app_date_from')
+                date_from += " 00:00:00"
+                calendar_event_domain += [('start_datetime', '>=', date_from)]
+            if request.session.get('app_date_to'):
+                date_to = request.session['app_date_to']
+                date_to += " 23:59:59"
+                calendar_event_domain += [('start_datetime', '<=', date_to)]
+
+            calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+
+            if request.session.get('positive_check'):
+                calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
+            if request.session.get('negative_check'):
+                calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
+
             for event_rec in calendar_event_recs:
                 covid_status = event_rec.covid_status
                 if covid_status:
