@@ -57,7 +57,10 @@ class CustomerPortal(CustomerPortal):
         partner = request.env.user.partner_id
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
-            event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+            timezone = self.event_id.user_id.tz
+            if not timezone:
+                timezone = "Europe/Amsterdam"
+            event_datetime = event_rec.start_datetime.astimezone(timezone(timezone))
             event_data = {
                 'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
@@ -280,7 +283,12 @@ class CustomerPortal(CustomerPortal):
         calendar_event = request.env['calendar.event'].sudo()
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
-            event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+
+            timezone = self.event_id.user_id.tz
+            if not timezone:
+                timezone = "Europe/Amsterdam"
+            
+            event_datetime = event_rec.start_datetime.astimezone(timezone(timezone))
             event_data = {
                 'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),

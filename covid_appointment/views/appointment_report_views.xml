@@ -7,6 +7,7 @@
                 <field name="partner_company_id" type="row"/>
                 <field name="appointment_type_id" type="row"/>
                 <field name="gender" type="row"/>
+                <field name="email" type="row"/>
                 <field name="total" type="measure"/>
                 <field name="event_state" type="col"/>
             </pivot>            
@@ -26,6 +27,7 @@
                 <field name="partner_company_id" type="row"/>
                 <field name="appointment_type_id" type="row"/>
                 <field name="gender" type="row"/>
+                <field name="email" type="row"/>
                 <field name="total" type="measure"/>
                 <field name="coid_status" type="col"/>
             </pivot>            

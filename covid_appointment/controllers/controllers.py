@@ -64,7 +64,10 @@ class CovidAppointments(http.Controller):
             if not calendar_event_recs:
                 error_msg = "No records found for this customer"
             for event_rec in calendar_event_recs:
-                event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+                timezone = event_rec.user_id.tz
+                if not timezone:
+                    timezone = "Europe/Amsterdam"                
+                event_datetime = event_rec.start_datetime.astimezone(timezone(timezone))
                 event_data = {
                     'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                     'test_center': event_rec.appointment_type_id.name,
