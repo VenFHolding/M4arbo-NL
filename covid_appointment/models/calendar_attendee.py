@@ -46,15 +46,16 @@ class Attendee(models.Model):
             outlook_url = base_url + '/website/calendar/ics/' + self.event_id.access_token + '.ics'
             cancel_url = base_url + '/website/calendar/cancel/' + self.event_id.access_token
 
-            timezone = self.event_id.user_id.tz
-            if not timezone:
-                timezone = "Europe/Amsterdam"
+            user_timezone = self.event_id.user_id.tz
+            if not user_timezone:
+                user_timezone = "Europe/Amsterdam"
+
 
             rendering_context.update({
                 'dbname': self._cr.dbname,
                 'base_url': self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='http://localhost:8069'),
                 'force_event_id': force_event_id,
-                'start_datetime': self.event_id.start_datetime.astimezone(timezone(timezone)).strftime('%d-%m-%Y %H:%M'),
+                'start_datetime': self.event_id.start_datetime.astimezone(timezone(user_timezone)).strftime('%d-%m-%Y %H:%M'),
                 'google_url': google_url,
                 'outlook_url': outlook_url,
                 'cancel_url': cancel_url,
