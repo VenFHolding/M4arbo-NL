@@ -49,6 +49,27 @@ class CustomerPortal(CustomerPortal):
             }
             return request.make_response(html_escape(json.dumps(error)))
 
+    @http.route(['/covid_report_history/download/excel/<int:wizard_id>'], type='http', auth="user", website=True)
+    def download_xlsx_covid_report_by_admin(self, wizard_id, **kw):
+        wizard_rec = request.env['appointment.history.report'].browse([wizard_id])
+        xlsx_data = wizard_rec.get_xlsx_data()
+        report_name = "covid_report"
+        try:
+            response = request.make_response(
+                        xlsx_data,
+                        headers=[('Content-Type', 'application/vnd.ms-excel'), ('Content-Disposition', content_disposition(report_name + '.xlsx'))
+                        ]
+                    )
+            return response
+
+        except Exception as e:
+            se = _serialize_exception(e)
+            error = {
+                'code': 200,
+                'message': 'Odoo Server Error',
+                'data': se
+            }
+            return request.make_response(html_escape(json.dumps(error)))
 
     @http.route(['/my/covid_appointments', '/my/covid_appointments/page/<int:page>'], type='http', auth="user", website=True)
     def portal_my_covid_appointments(self, page=1, **kw):
@@ -57,7 +78,7 @@ class CustomerPortal(CustomerPortal):
         partner = request.env.user.partner_id
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
-            user_timezone = self.event_id.user_id.tz
+            user_timezone = event_rec.user_id.tz
             if not user_timezone:
                 user_timezone = "Europe/Amsterdam"
             event_datetime = event_rec.start_datetime.astimezone(timezone(user_timezone))
@@ -284,7 +305,7 @@ class CustomerPortal(CustomerPortal):
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
 
-            user_timezone = self.event_id.user_id.tz
+            user_timezone = event_rec.user_id.tz
             if not user_timezone:
                 user_timezone = "Europe/Amsterdam"
             

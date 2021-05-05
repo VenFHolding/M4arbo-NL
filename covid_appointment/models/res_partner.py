@@ -154,26 +154,28 @@ class InheritPartner(models.Model):
         return domain
 
 
-    def get_xlsx_report(self):
+    def get_xlsx_report(self, appointment_history_id=False):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
         # Write header
         header_format = workbook.add_format({'align': 'center', 'bold': True, 'valign':   'vcenter', 'font_name': 'Liberation Sans'})
         table_header_format = workbook.add_format({'bold': True, 'border': 1, 'font_name': 'Liberation Sans'})
-        # partner_detail_format = workbook.add_format({'bold': True, 'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff'})
-        # partner_detail_data_format = workbook.add_format({'font_name': 'Liberation Sans', 'bg_color': '#807e7e', 'font_color': '#ffffff', 'align': 'left'})
+
         sheet.set_column(0, 0, 5)
-        sheet.set_column(1, 1, 27)
-        sheet.set_column(2, 2, 10)
-        sheet.set_column(3, 3, 20)
-        sheet.set_column(4, 4, 27)
-        sheet.set_column(5, 5, 5)
+        sheet.set_column(1, 1, 15)
+        sheet.set_column(2, 2, 27)
+        sheet.set_column(3, 3, 10)
+        sheet.set_column(4, 4, 20)
+        sheet.set_column(5, 5, 27)
         sheet.set_column(6, 6, 12)
-        sheet.set_column(7, 7, 20)
-        sheet.set_column(8, 8, 23)
-        sheet.set_column(9, 9, 17)
-        sheet.set_column(10, 10, 15)
+        sheet.set_column(7, 7, 5)
+        sheet.set_column(8, 8, 12)
+        sheet.set_column(9, 9, 20)
+        sheet.set_column(10, 10, 20)
+        sheet.set_column(11, 11, 23)
+        sheet.set_column(12, 12, 17)
+        sheet.set_column(13, 13, 15)
         sheet.merge_range(0, 0, 1, 8, 'Employee’s Covid Status Report', header_format)
 
         # Write Data
@@ -183,18 +185,27 @@ class InheritPartner(models.Model):
         sr_no = 1
 
         sheet.write(row, col, "Sr. No.", table_header_format)
-        sheet.write(row, col+1, "Name", table_header_format)
-        sheet.write(row, col+2, "Gender", table_header_format)
-        sheet.write(row, col+3, "Contact No.", table_header_format)
-        sheet.write(row, col+4, "Email", table_header_format)
-        sheet.write(row, col+5, "Age", table_header_format)
-        sheet.write(row, col+6, "Appointment ID", table_header_format)
-        sheet.write(row, col+7, "Appointment Date", table_header_format)
-        sheet.write(row, col+8, "Test Centre", table_header_format)
-        sheet.write(row, col+9, "Appointment Status", table_header_format)
-        sheet.write(row, col+10, "Covid Status", table_header_format)
+        sheet.write(row, col+1, "Company", table_header_format)
+        sheet.write(row, col+2, "Name", table_header_format)
+        sheet.write(row, col+3, "Gender", table_header_format)
+        sheet.write(row, col+4, "Contact No.", table_header_format)
+        sheet.write(row, col+5, "Email", table_header_format)
+        sheet.write(row, col+6, "DOB", table_header_format)
+        sheet.write(row, col+7, "Age", table_header_format)
+        sheet.write(row, col+8, "Appointment ID", table_header_format)
+        sheet.write(row, col+9, "Create Date", table_header_format)
+        sheet.write(row, col+10, "Appointment Date", table_header_format)
+        sheet.write(row, col+11, "Test Centre", table_header_format)
+        sheet.write(row, col+12, "Appointment Status", table_header_format)
+        sheet.write(row, col+13, "Covid Status", table_header_format)
         row += 1
-        domain = self.get_domain()
+        
+        if appointment_history_id:
+            appointment_history_wizard_rec = self.env['appointment.history.report'].browse([appointment_history_id])
+            domain = appointment_history_wizard_rec.get_partner_domain()
+        else:
+            domain = self.get_domain()
+
         partner_recs = self.sudo().search(domain)
         for partner_rec in partner_recs:
             gender = partner_rec.gender
@@ -202,37 +213,58 @@ class InheritPartner(models.Model):
                 gender = gender.capitalize()
 
             calendar_event_domain = [('patient_partner_id', '=', partner_rec.id)]
-            if request.session.get('app_date_from'):
-                date_from = request.session.get('app_date_from')
-                date_from += " 00:00:00"
-                calendar_event_domain += [('start_datetime', '>=', date_from)]
-            if request.session.get('app_date_to'):
-                date_to = request.session['app_date_to']
-                date_to += " 23:59:59"
-                calendar_event_domain += [('start_datetime', '<=', date_to)]
+            if appointment_history_id:
+                user_rec = self.env.user
+                appointment_type_recs = False
+                if user_rec.user_has_groups('covid_appointment.group_appointment_own_document') and not user_rec.user_has_groups('website_calendar.group_calendar_manager'):
+                    appointment_type_recs = self.env['calendar.appointment.type'].search(
+                        [('user_id', '=', user_rec.id)])
 
-            calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+                appointment_history_wizard_rec = self.env['appointment.history.report'].browse([appointment_history_id])
+                calendar_event_domain += appointment_history_wizard_rec.get_calendar_event_domain()
+                calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+                if appointment_history_wizard_rec.covid_status and appointment_history_wizard_rec.covid_status == 'positive':
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
+                if appointment_history_wizard_rec.covid_status and appointment_history_wizard_rec.covid_status == 'negative':
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
+                if appointment_type_recs:
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.appointment_type_id.id in appointment_type_recs.ids)
 
-            if request.session.get('positive_check'):
-                calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
-            if request.session.get('negative_check'):
-                calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
+            else:
+                if request.session.get('app_date_from'):
+                    date_from = request.session.get('app_date_from')
+                    date_from += " 00:00:00"
+                    calendar_event_domain += [('start_datetime', '>=', date_from)]
+                if request.session.get('app_date_to'):
+                    date_to = request.session['app_date_to']
+                    date_to += " 23:59:59"
+                    calendar_event_domain += [('start_datetime', '<=', date_to)]
+
+                calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+
+                if request.session.get('positive_check'):
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
+                if request.session.get('negative_check'):
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
 
             for event_rec in calendar_event_recs:
                 covid_status = event_rec.covid_status
                 if covid_status:
                     covid_status = covid_status.capitalize()
                 sheet.write(row, col, sr_no)
-                sheet.write(row, col+1, partner_rec.name)
-                sheet.write(row, col+2, gender)
-                sheet.write(row, col+3, partner_rec.mobile)
-                sheet.write(row, col+4, partner_rec.email)
-                sheet.write(row, col+5, partner_rec.age)
-                sheet.write(row, col+6, event_rec.event_name)
-                sheet.write(row, col+7, str(event_rec.start_datetime))
-                sheet.write(row, col+8, event_rec.appointment_type_id.name)
-                sheet.write(row, col+9, event_rec.state)
-                sheet.write(row, col+10, covid_status or '')
+                sheet.write(row, col+1, partner_rec.parent_id.name)
+                sheet.write(row, col+2, partner_rec.name)
+                sheet.write(row, col+3, gender)
+                sheet.write(row, col+4, partner_rec.mobile)
+                sheet.write(row, col+5, partner_rec.email)
+                sheet.write(row, col+6, partner_rec.dob.strftime('%d-%m-%Y'))
+                sheet.write(row, col+7, partner_rec.age)
+                sheet.write(row, col+8, event_rec.event_name)
+                sheet.write(row, col+9, event_rec.create_date.strftime('%d-%m-%Y %H:%M'))
+                sheet.write(row, col+10, event_rec.start_datetime.strftime('%d-%m-%Y %H:%M'))
+                sheet.write(row, col+11, event_rec.appointment_type_id.name)
+                sheet.write(row, col+12, event_rec.state)
+                sheet.write(row, col+13, covid_status or '')
                 row += 1
                 sr_no += 1
 

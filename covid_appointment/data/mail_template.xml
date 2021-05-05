@@ -13,8 +13,8 @@
                 <div style="margin: 0px; padding: 0px;">
                      <div style="width: 100%;">
                         <div style="float:left; border-right:1px solid #cccccc; width:65%; padding-right:10px;">
-                            <p>${object.common_name}</p>
-                            <h4>Your covid appointment has been scheduled at ${object.event_id.name}</h4>
+                            <p>${object.common_name},</p>
+                            <h4>Your covid appointment has been scheduled at ${object.event_id.appointment_type_id.name}</h4>
                             <h4 style="color: #adb5bd !important;">Schedule Date &amp; Time: ${ctx.get('start_datetime')}</h4>
                             <h4 style="color: #adb5bd !important;">Appointment ID: ${object.event_id.event_name}</h4>
                             <a role="button" style="cursor: pointer;margin-top: 0.5rem;

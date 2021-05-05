@@ -50,7 +50,6 @@ class Attendee(models.Model):
             if not user_timezone:
                 user_timezone = "Europe/Amsterdam"
 
-
             rendering_context.update({
                 'dbname': self._cr.dbname,
                 'base_url': self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='http://localhost:8069'),
