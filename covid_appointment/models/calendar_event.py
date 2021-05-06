@@ -6,20 +6,13 @@ from odoo.exceptions import ValidationError
 class CalendarEvent(models.Model):
     _inherit = "calendar.event"
 
-    def action_send_mail_with_qr(self):
-        email_values = {
-            'model': None,  # We don't want to have the mail in the tchatter while in queue!
-            'res_id': None,
-        }
-        mail_template = self.env.ref('covid_appointment.email_template_testing_qr_code_image')
-        event_rec = self.search([], order='id desc', limit=1)
-        rendering_context = {
-            'qr_code_string': event_rec.qr_code_string,
-        }
-        mail_template = mail_template.with_context(rendering_context)
-        mail_template.send_mail(event_rec.attendee_ids[0].id, email_values=email_values,
-                                notif_layout='mail.mail_notification_light')
-
+    def _cron_execute_do_expire(self):
+        current_date_time = datetime.now().replace(microsecond=0) + timedelta(hours=1)
+        appointment_recs = self.search([('state', '=', 'open'),
+                                        ('start_datetime', '<=', current_date_time)])
+        appointment_recs.write({
+            'is_expired': True,
+        })
 
     def _cron_execute_archive_event(self):
         """
@@ -62,6 +55,14 @@ class CalendarEvent(models.Model):
                                      ('negative', 'Negative'),
                                      ('failed', 'Test Failed')],
                                     string="Covid State", readonly=1)
+    is_expired = fields.Boolean(string="Event Expired", default=False, copy=False)
+    appointment_start_time = fields.Datetime(string="Appointment Start Time")
+    appointment_end_time = fields.Datetime(string="Appointment End Time")
+    appointment_duration = fields.Float(string="Appointment Duration", compute="get_duration")
+
+    def get_duration(self):
+        for event in self:
+            event.appointment_duration = event._get_duration(event.appointment_start_time, event.appointment_end_time)
 
     def _get_report_base_filename(self):
         self.ensure_one()

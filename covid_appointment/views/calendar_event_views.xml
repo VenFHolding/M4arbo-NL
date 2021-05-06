@@ -42,6 +42,9 @@
             <field name="partner_ids" position="replace">
                 <field name="patient_partner_id"/>
             </field>
+            <field name="allday" position="after">
+                <field name="is_expired" readonly="1"/>
+            </field>
             <xpath expr="//label[@for='partner_ids']" position="attributes">
                 <attribute name="for">patient_partner_id</attribute>
             </xpath>
@@ -54,19 +57,34 @@
         <field name="model">calendar.event</field>
         <field name="arch" type="xml">
             <tree string="Meetings" decoration-bf="message_needaction==True">
+                <field name="event_name" string="Appointment ID"/>
                 <field name="name" string="Subject"/>
                 <field name="create_date" string="Create Date"/>
                 <field name="allday" invisible="True"/>
-                <field name="start" string="Start Date"/>
-                <field name="stop" string="End Date"/>
+                <field name="appointment_start_time"/>
+                <field name="appointment_end_time"/>
                 <field name="patient_partner_id"/>
                 <field name="location"/>
                 <field name="state" invisible="True"/>
-                <field name="duration" widget="float_time"/>
+                <field name="appointment_duration" widget="float_time"/>
                 <field name="state"/>
                 <field name="covid_status"/>
                 <field name="message_needaction" invisible="1"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_calendar_event_search_inherited" model="ir.ui.view">
+        <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <field name="name" position="before">
+                <field name="event_name" string="Appointment ID"/>
+            </field>
+            <filter name="inactive" position="after">
+                <separator/>
+                <filter string="Expired" name="expired" domain="[('is_expired', '=', True)]"/>
+            </filter>
         </field>
     </record>
 

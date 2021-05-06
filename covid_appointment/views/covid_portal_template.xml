@@ -136,7 +136,7 @@
                                         <div style="font-size: smaller;width:100%;">
                                             <strong>Name: </strong><span t-field="contact.name"/><br/>
                                             <strong>Email: </strong><span t-field="contact.email"/><br/>
-                                            <strong>Phone: </strong><span t-if="contact.phone" t-field="contact.phone"/>
+                                            <strong>Phone: </strong><span t-if="contact.mobile" t-field="contact.mobile"/>
                                             <span t-else="">NA</span><br/>
                                             <strong>Age: </strong><span t-field="contact.age"/><br/>
                                             <a t-attf-href="/view/covid_reports/{{contact.id}}" class="btn btn-primary btn-sm active" role="button" aria-pressed="true" style="float: right;">View Reports</a>
@@ -163,6 +163,7 @@
             <div class="oe_structure container mb128">
                 <table class="table table-striped">
                     <tr>
+                        <th>Appointment ID</th>
                         <th>Date &amp; Time</th>
                         <th>Company Ref.</th>
                         <th>Test Center</th>
@@ -172,6 +173,7 @@
                     </tr>
                     <t t-if="calendar_event_data">
                         <tr t-foreach="calendar_event_data" t-as="data">
+                            <td><t t-esc="data['appointment_id']"/></td>
                             <td><t t-esc="data['date']"/></td>
                             <td><t t-esc="data['company_ref']"/></td>
                             <td><t t-esc="data['test_center']"/></td>

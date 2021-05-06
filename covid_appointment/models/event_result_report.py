@@ -17,6 +17,7 @@ class AppointmentReport(models.Model):
                                     ('negative', 'Negative')],
                                     string="Result")
     partner_id = fields.Many2one('res.partner', string="Patient")
+    email = fields.Char(string="Email")
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -26,6 +27,7 @@ class AppointmentReport(models.Model):
                 company.id AS partner_company_id,
                 apt_type.id AS appointment_type_id,
                 partner.gender AS gender,
+                partner.email AS email,
                 partner.id AS partner_id,
                 report.state AS coid_status,
                 count(*) as total

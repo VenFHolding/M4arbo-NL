@@ -16,9 +16,7 @@
     <!-- Covid Report Menus -->
     <menuitem name="Reports" id="menu_covid_report" parent="main_menu_covid_appointments"/>
 
-    <menuitem name="Total Appointments" action="appointment_report_action" id="menu_action_appointment_report" parent="menu_covid_report"/>
-
-    <menuitem name="Covid Test Report" action="covid_appointment_result_report_action" id="menu_action_covid_appointment_report" parent="menu_covid_report"/>
+    <menuitem name="Appointment History Report" action="appointment_history_xlsx_action" id="menu_action_appointment_report" parent="menu_covid_report"/>
 
     <!-- Update Groups of contacts menu -->
     <record model='ir.ui.menu' id='contacts.menu_contacts'>

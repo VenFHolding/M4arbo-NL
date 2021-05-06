@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="appointment_history_report_form_view" model="ir.ui.view">
+        <field name="model">appointment.history.report</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group string="Age Filter">
+                        <field name="min_age"/>
+                        <field name="max_age"/>
+                    </group>
+                    <group string="Appointment Date Range">
+                        <field name="appointment_min_date"/>
+                        <field name="appointment_max_date"/>
+                    </group>
+                </group>
+                <group>
+                    <group>
+                        <field name="gender"/>
+                    </group>
+                    <group>
+                        <field name="covid_status"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="partner_ids" widget="many2many_tags" domain="[('company_type', '=', 'company')]" options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button string="Download Report" class="btn btn-primary" type="object" name="download_covid_xlsx_report" />
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="appointment_history_xlsx_action" model="ir.actions.act_window">
+        <field name="name">Appointment History Report</field>
+        <field name="res_model">appointment.history.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

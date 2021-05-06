@@ -39,7 +39,7 @@
                             <p>
                                 <b>Location:</b>
                                 <br/>
-                                ${object.event_id.Location}
+                                ${object.event_id.name}
                             </p>
 
                         </div>

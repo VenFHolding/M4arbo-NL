@@ -21,7 +21,7 @@ class CustomerPortal(CustomerPortal):
         total_login_partner_child = len(partner.child_ids.filtered(
             lambda contact: contact.type == 'contact'))
         total_covid_appointments = request.env['calendar.event'].search_count(
-            [('partner_ids', 'in', partner.ids)])
+            [('patient_partner_id', 'in', partner.ids)])
         values.update({
             'total_login_partner_child': total_login_partner_child,
             'total_covid_appointments': total_covid_appointments
@@ -49,6 +49,27 @@ class CustomerPortal(CustomerPortal):
             }
             return request.make_response(html_escape(json.dumps(error)))
 
+    @http.route(['/covid_report_history/download/excel/<int:wizard_id>'], type='http', auth="user", website=True)
+    def download_xlsx_covid_report_by_admin(self, wizard_id, **kw):
+        wizard_rec = request.env['appointment.history.report'].browse([wizard_id])
+        xlsx_data = wizard_rec.get_xlsx_data()
+        report_name = "covid_report"
+        try:
+            response = request.make_response(
+                        xlsx_data,
+                        headers=[('Content-Type', 'application/vnd.ms-excel'), ('Content-Disposition', content_disposition(report_name + '.xlsx'))
+                        ]
+                    )
+            return response
+
+        except Exception as e:
+            se = _serialize_exception(e)
+            error = {
+                'code': 200,
+                'message': 'Odoo Server Error',
+                'data': se
+            }
+            return request.make_response(html_escape(json.dumps(error)))
 
     @http.route(['/my/covid_appointments', '/my/covid_appointments/page/<int:page>'], type='http', auth="user", website=True)
     def portal_my_covid_appointments(self, page=1, **kw):
@@ -57,8 +78,12 @@ class CustomerPortal(CustomerPortal):
         partner = request.env.user.partner_id
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
-            event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+            user_timezone = event_rec.user_id.tz
+            if not user_timezone:
+                user_timezone = "Europe/Amsterdam"
+            event_datetime = event_rec.start_datetime.astimezone(timezone(user_timezone))
             event_data = {
+                'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                 'test_center': event_rec.appointment_type_id.name,
                 'partner_name': event_rec.partner_ids[0].name,
@@ -180,7 +205,6 @@ class CustomerPortal(CustomerPortal):
             request.env.cr.execute(sql)
             partner_ids_data = request.env.cr.fetchall()
             partner_ids += [partner[0] for partner in partner_ids_data]
-            domain += [('id', 'in', partner_ids)]
             filter_data.update({
                 'positive_check': True
             })
@@ -227,6 +251,8 @@ class CustomerPortal(CustomerPortal):
             calendar_event_domain += [('start_datetime', '<=', date_to)]
 
         if calendar_event_domain:
+            if partner_ids:
+                calendar_event_domain += [('patient_partner_id', 'in', partner_ids)]
             calendar_event_recs = request.env['calendar.event'].sudo().search(calendar_event_domain)
             partner_ids += calendar_event_recs.mapped('partner_ids').ids
 
@@ -278,8 +304,14 @@ class CustomerPortal(CustomerPortal):
         calendar_event = request.env['calendar.event'].sudo()
         calendar_event_recs = calendar_event.search([('partner_ids', 'in', partner.ids)])
         for event_rec in calendar_event_recs:
-            event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
+
+            user_timezone = event_rec.user_id.tz
+            if not user_timezone:
+                user_timezone = "Europe/Amsterdam"
+            
+            event_datetime = event_rec.start_datetime.astimezone(timezone(user_timezone))
             event_data = {
+                'appointment_id': event_rec.event_name,
                 'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
                 'test_center': event_rec.appointment_type_id.name,
                 'partner_name': event_rec.patient_partner_id.name,

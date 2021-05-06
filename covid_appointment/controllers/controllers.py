@@ -24,14 +24,11 @@ class DownloadReport(CustomerPortal):
     @http.route('/download/covid_test/label/<model("calendar.event"):event>', type='http', auth='user', website=True)
     def download_covid_test_label(self, event,**kw):
         event.is_label_printed = True
+        event.appointment_start_time = datetime.now().replace(microsecond=0) 
         return self._show_report(model=event, report_type='pdf', report_ref='covid_appointment.calendar_event_label_report', download=False)
 
 
 class CovidAppointments(http.Controller):
-
-    @http.route('/covid/appointment/history', type='http', auth='public', website=True)
-    def search_covid_appointment_history(self, **kw):
-        return http.request.render('covid_appointment.search_covid_appointment_layout')
 
     @http.route('/website/covid/policy', type='http', auth='public', website=True)
     def search_covid_privacy_policy(self, **kw):
@@ -44,50 +41,6 @@ class CovidAppointments(http.Controller):
                 'policy_data': policy_id,
             }
         return http.request.render('covid_appointment.search_covid_privacy_layout', data)
-
-    @http.route(['/covid/appointment/view_history'], type='http', auth="public", methods=['POST', 'GET'], website=True)
-    def view_covid_appointment_history(self, **post):
-        if not post.get('company_ref') or not post.get('email'):
-            return request.redirect('/covid/appointment/history')
-        partner = request.env['res.partner'].sudo()
-        events = request.env['calendar.event'].sudo()
-        partner_company_rec = partner.search([('ref', '=', post.get('company_ref'))], limit=1)
-        calendar_event_data = []
-        error_msg = ""
-        if partner_company_rec:
-            customer = partner.search([('email', '=', post.get('email'))], limit=1)
-            if not customer:
-                error_msg = 'Entered email is not found in the system.'
-            calendar_event_recs = events.with_context(active_test=False).search([('partner_ids', 'in', customer.ids),
-                                                 ('appointment_type_id', '!=', False)])
-            if not calendar_event_recs:
-                error_msg = "No records found for this customer"
-            for event_rec in calendar_event_recs:
-                event_datetime = event_rec.start_datetime.astimezone(timezone(event_rec.user_id.tz))
-                event_data = {
-                    'date': event_datetime.strftime('%d-%m-%Y %H:%M'),
-                    'test_center': event_rec.appointment_type_id.name,
-                    'partner_name': event_rec.patient_partner_id.name,
-                    'company_ref': event_rec.patient_partner_id.parent_id.name,
-                    'appointment_status': dict(event_rec._fields['state'].selection).get(event_rec.state),
-                    'covid_status': False,
-                }
-                if event_rec.state == 'done' and event_rec.event_report_ids:
-                    event_data.update({
-                        'covid_status': event_rec.event_report_ids[0].state.capitalize()
-                    })
-                calendar_event_data.append(event_data)
-        else:
-            error_msg = 'Entered Company Reference is not found in the system.'
-        if error_msg:
-            data = {
-                'error_msg': error_msg,
-            }
-            return http.request.render('covid_appointment.search_covid_appointment_layout', data)
-        data = {
-            'calendar_event_data': calendar_event_data,
-        }
-        return http.request.render('covid_appointment.covid_appointment_history_data_template', data)
 
     @http.route('/covid_report/<string:event_access_token>',
                 type='http', auth="public", website=True)
@@ -209,8 +162,8 @@ class CovidAppointments(http.Controller):
             if event.sudo().attendee_ids:
                 event.sudo().attendee_ids._send_mail_to_attendees(
                     'covid_appointment.email_template_covid_cancel_appointment')
-
-            return request.redirect('/website/calendar?message=cancel')
+            url = '/covid_report/' + event.access_token
+            return request.redirect(url)
 
         if event.is_label_printed:
             return request.redirect('/covid_report/'+ event.access_token +'?no_cancel=True')
@@ -254,7 +207,7 @@ class CovidAppointments(http.Controller):
                     'covid_result': event_report_rec.state
                 }
                 invitation_template.with_context(context).send_mail(attendee.id, notif_layout='mail.mail_notification_light')
-
+            event.appointment_end_time = datetime.now().replace(microsecond=0)
         else:
             event.sudo().write({
                 'state': 'not achieved',
@@ -348,6 +301,7 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
                 'name': name,
                 'country_id': country_id,
                 'mobile': phone,
+                'phone': phone,
                 'email': email,
                 'gender': kwargs.get('gender'),
                 'dob': kwargs.get('dob_datepicker'),

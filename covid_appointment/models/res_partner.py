@@ -1,11 +1,22 @@
 import io
 from odoo import api, fields, models
+from odoo.http import request
 from datetime import datetime, timedelta
-from odoo.tools.misc import xlsxwriter
+import xlsxwriter
 
 
 class InheritPartner(models.Model):
-    _inherit = "res.partner"
+    _inherit = "res.partner"    
+
+    @api.model
+    def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
+        """
+            On Test Centre Login, displayed only test centre's partner.
+        """
+        user = self.env.user
+        if user.user_has_groups('covid_appointment.group_appointment_own_document') and not user.user_has_groups('website_calendar.group_calendar_manager'):
+            domain += [('id', '=', user.partner_id.id)]
+        return super(InheritPartner, self).search_read(domain, fields, offset, limit, order)
 
     def _cron_execute_update_age(self):
         partner_recs = self.search([('company_type', '=', 'person'),
@@ -49,7 +60,7 @@ class InheritPartner(models.Model):
         if self.add_all_test_centre:
             appointment_centre_ids = self.env['calendar.appointment.type'].search(
                 [('is_published', '=', True)]).ids
-            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)] 
+            self.appointment_centre_ids = [(6, 0, appointment_centre_ids)]
 
     def appointmet_verify_check(self, Partner, date_start):
         """ verify appointment validity """
@@ -79,52 +90,183 @@ class InheritPartner(models.Model):
 
         return data_dict
 
-    def get_xlsx_report(self):
+    def get_domain(self):
+        """
+            This function will be called when company user tries to download
+            covid report of thier employees.
+            This function will returns a domain based on filters, which
+            are applied by the user.
+        """
+        domain = [('parent_id', '=', self.id)]
+        calendar_event_domain = []
+        partner_ids = []
+
+        # Age filter domain
+        if request.session.get('contact_age_filter'):
+            min_age = int(request.session.get('contact_age_filter').split('-')[0])
+            max_age = int(request.session.get('contact_age_filter').split('-')[1])
+            domain += [('age', '>=', min_age), ('age', '<=', max_age)]
+        if request.session.get('max_age'):
+            domain += [('age', '<=', max_age)]
+        if request.session.get('min_age'):
+            domain += [('age', '>=', min_age)]
+        if request.session.get('gender_filter'):
+            gender = request.session.get('gender_filter')
+            domain += [('gender', '=', gender)]
+
+        # Covid status domain
+        if request.session.get('positive_check'):
+            sql = """
+                SELECT er1.partner_id FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
+                LEFT JOIN event_report AS er2 ON er2.id = er1.id
+                WHERE er2.state = 'positive'
+            """
+            request.env.cr.execute(sql)
+            partner_ids_data = request.env.cr.fetchall()
+            partner_ids += [partner[0] for partner in partner_ids_data]
+
+        if request.session.get('negative_check'):
+            sql = """
+                SELECT er1.partner_id FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
+                LEFT JOIN event_report AS er2 ON er2.id = er1.id
+                WHERE er2.state = 'negative'
+            """
+            request.env.cr.execute(sql)
+            partner_ids_data = request.env.cr.fetchall()
+            partner_ids += [partner[0] for partner in partner_ids_data]
+
+        # Appointment Date range domain
+        if request.session.get('app_date_from'):
+            date_from = request.session.get('app_date_from')
+            date_from += " 00:00:00"
+            calendar_event_domain += [('start_datetime', '>=', date_from)]
+        if request.session.get('app_date_to'):
+            date_to = request.session['app_date_to']
+            date_to += " 23:59:59"
+            calendar_event_domain += [('start_datetime', '<=', date_to)]
+        if calendar_event_domain:
+            calendar_event_recs = request.env['calendar.event'].sudo().search(calendar_event_domain)
+            partner_ids += calendar_event_recs.mapped('partner_ids').ids
+        
+        if partner_ids:
+            domain += [('id', 'in', partner_ids)]
+
+        return domain
+
+
+    def get_xlsx_report(self, appointment_history_id=False):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
         # Write header
         header_format = workbook.add_format({'align': 'center', 'bold': True, 'valign':   'vcenter', 'font_name': 'Liberation Sans'})
         table_header_format = workbook.add_format({'bold': True, 'border': 1, 'font_name': 'Liberation Sans'})
+
         sheet.set_column(0, 0, 5)
-        sheet.set_column(1, 1, 25)
-        sheet.set_column(4, 4, 25)
-        sheet.set_column(5, 5, 20)
-        sheet.set_column(6, 6, 20)
-        sheet.merge_range(0, 0, 1, 6, 'Employee’s Covid Status Report', header_format)
-        sheet.write(3, 0, "Sr. No.", table_header_format)
-        sheet.write(3, 1, "Name", table_header_format)
-        sheet.write(3, 2, "Gender", table_header_format)
-        sheet.write(3, 3, "Age", table_header_format)
-        sheet.write(3, 4, "Last Appointment Date", table_header_format)
-        sheet.write(3, 5, "Test Centre", table_header_format)
-        sheet.write(3, 6, "Covid Status", table_header_format)
+        sheet.set_column(1, 1, 15)
+        sheet.set_column(2, 2, 27)
+        sheet.set_column(3, 3, 10)
+        sheet.set_column(4, 4, 20)
+        sheet.set_column(5, 5, 27)
+        sheet.set_column(6, 6, 12)
+        sheet.set_column(7, 7, 5)
+        sheet.set_column(8, 8, 12)
+        sheet.set_column(9, 9, 20)
+        sheet.set_column(10, 10, 20)
+        sheet.set_column(11, 11, 23)
+        sheet.set_column(12, 12, 17)
+        sheet.set_column(13, 13, 15)
+        sheet.merge_range(0, 0, 1, 8, 'Employee’s Covid Status Report', header_format)
 
         # Write Data
-        sql_query = """
-            SELECT er1.partner_id AS partner_id,
-            er2.state AS covid_status,
-            er2.calendar_event_id AS event_id
-            FROM (SELECT partner_id, max(id) AS id FROM event_report GROUP BY partner_id) AS er1
-            LEFT JOIN event_report AS er2 ON er2.id = er1.id
-        """
-        self._cr.execute(sql_query)
-        appointment_report_data = self._cr.dictfetchall()
-        sr_no = 1
-        row = 4
+        row = 3
+        
         col = 0
-        for report_data in appointment_report_data:
-            partner_rec = self.env['res.partner'].browse([report_data.get('partner_id')])
-            calendar_event_rec = self.env['calendar.event'].sudo().browse([report_data.get('event_id')])
-            sheet.write(row, col, sr_no)
-            sheet.write(row, col+1, partner_rec.name)
-            sheet.write(row, col+2, partner_rec.gender.capitalize())
-            sheet.write(row, col+3, partner_rec.age)
-            sheet.write(row, col+4, str(calendar_event_rec.start_datetime))
-            sheet.write(row, col+5, calendar_event_rec.appointment_type_id.name)
-            sheet.write(row, col+6, report_data.get('covid_status').capitalize())
-            sr_no += 1
-            row += 1
+        sr_no = 1
+
+        sheet.write(row, col, "Sr. No.", table_header_format)
+        sheet.write(row, col+1, "Company", table_header_format)
+        sheet.write(row, col+2, "Name", table_header_format)
+        sheet.write(row, col+3, "Gender", table_header_format)
+        sheet.write(row, col+4, "Contact No.", table_header_format)
+        sheet.write(row, col+5, "Email", table_header_format)
+        sheet.write(row, col+6, "DOB", table_header_format)
+        sheet.write(row, col+7, "Age", table_header_format)
+        sheet.write(row, col+8, "Appointment ID", table_header_format)
+        sheet.write(row, col+9, "Create Date", table_header_format)
+        sheet.write(row, col+10, "Appointment Date", table_header_format)
+        sheet.write(row, col+11, "Test Centre", table_header_format)
+        sheet.write(row, col+12, "Appointment Status", table_header_format)
+        sheet.write(row, col+13, "Covid Status", table_header_format)
+        row += 1
+        
+        if appointment_history_id:
+            appointment_history_wizard_rec = self.env['appointment.history.report'].browse([appointment_history_id])
+            domain = appointment_history_wizard_rec.get_partner_domain()
+        else:
+            domain = self.get_domain()
+
+        partner_recs = self.sudo().search(domain)
+        for partner_rec in partner_recs:
+            gender = partner_rec.gender
+            if gender:
+                gender = gender.capitalize()
+
+            calendar_event_domain = [('patient_partner_id', '=', partner_rec.id)]
+            if appointment_history_id:
+                user_rec = self.env.user
+                appointment_type_recs = False
+                if user_rec.user_has_groups('covid_appointment.group_appointment_own_document') and not user_rec.user_has_groups('website_calendar.group_calendar_manager'):
+                    appointment_type_recs = self.env['calendar.appointment.type'].search(
+                        [('user_id', '=', user_rec.id)])
+
+                appointment_history_wizard_rec = self.env['appointment.history.report'].browse([appointment_history_id])
+                calendar_event_domain += appointment_history_wizard_rec.get_calendar_event_domain()
+                calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+                if appointment_history_wizard_rec.covid_status and appointment_history_wizard_rec.covid_status == 'positive':
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
+                if appointment_history_wizard_rec.covid_status and appointment_history_wizard_rec.covid_status == 'negative':
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
+                if appointment_type_recs:
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.appointment_type_id.id in appointment_type_recs.ids)
+
+            else:
+                if request.session.get('app_date_from'):
+                    date_from = request.session.get('app_date_from')
+                    date_from += " 00:00:00"
+                    calendar_event_domain += [('start_datetime', '>=', date_from)]
+                if request.session.get('app_date_to'):
+                    date_to = request.session['app_date_to']
+                    date_to += " 23:59:59"
+                    calendar_event_domain += [('start_datetime', '<=', date_to)]
+
+                calendar_event_recs = self.env['calendar.event'].sudo().search(calendar_event_domain)
+
+                if request.session.get('positive_check'):
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'positive')
+                if request.session.get('negative_check'):
+                    calendar_event_recs = calendar_event_recs.filtered(lambda event: event.covid_status == 'negative')
+
+            for event_rec in calendar_event_recs:
+                covid_status = event_rec.covid_status
+                if covid_status:
+                    covid_status = covid_status.capitalize()
+                sheet.write(row, col, sr_no)
+                sheet.write(row, col+1, partner_rec.parent_id.name)
+                sheet.write(row, col+2, partner_rec.name)
+                sheet.write(row, col+3, gender)
+                sheet.write(row, col+4, partner_rec.mobile)
+                sheet.write(row, col+5, partner_rec.email)
+                sheet.write(row, col+6, partner_rec.dob.strftime('%d-%m-%Y'))
+                sheet.write(row, col+7, partner_rec.age)
+                sheet.write(row, col+8, event_rec.event_name)
+                sheet.write(row, col+9, event_rec.create_date.strftime('%d-%m-%Y %H:%M'))
+                sheet.write(row, col+10, event_rec.start_datetime.strftime('%d-%m-%Y %H:%M'))
+                sheet.write(row, col+11, event_rec.appointment_type_id.name)
+                sheet.write(row, col+12, event_rec.state)
+                sheet.write(row, col+13, covid_status or '')
+                row += 1
+                sr_no += 1
 
         workbook.close()
         output.seek(0)

@@ -8,8 +8,12 @@
                         <h2>Scanned Appointment Details:</h2>
                         <table class="table">
                             <tr>
+                                <td style="width:35%"><b>Appointment ID:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.event_name"/></td>
+                            </tr>
+                            <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
-                                <td style="width:65%"><t t-esc="event_rec.partner_ids[0].name"/></td>
+                                <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
                             </tr>
                             <tr>
                                 <td style="width:35%"><b>Test Center:</b></td>
@@ -29,10 +33,10 @@
                             </tr>
                         </table>
                         <div class="row">
-                            <div t-if="not event_rec.is_label_printed" class="col-4">
+                            <div t-if="not event_rec.is_label_printed and not event_rec.is_expired" class="col-4">
                                 <button id="cancel_appointment" class="btn btn-danger btn-block" name="cancel_appointment" data-toggle="modal" data-target="#cancel_reason_modal"><i class="fa fa-close mr-1"></i>Cancel Appointment</button>
                             </div>
-                            <div t-if="is_internal_user" class="col-4">
+                            <div t-if="is_internal_user and not event_rec.is_expired" class="col-4">
                                 <a class="btn btn-secondary btn-block" t-attf-href="/download/covid_test/label/{{event_rec.id}}" id="print_label_report" title="Print" target="_blank"><i class="fa fa-print"/> Print Label</a>
                             </div>                            
                             <div t-if="is_internal_user and event_rec.is_label_printed" class="col-4 text-right">
@@ -52,6 +56,11 @@
                             <div id="fill_data_error_msg" t-if="disable_fill_data and is_internal_user" class="col-12 mt-3">
                                 <div class="alert alert-danger" role="alert">
                                     <p><strong>Medical staff is not assigned to this appointment. Please assign medical staff to enable fill data functionality.</strong></p>
+                                </div>
+                            </div>
+                            <div id="expired_error_msg" t-if="event_rec.is_expired" class="col-12 mt-3">
+                                <div class="alert alert-danger" role="alert">
+                                    <p><strong>This event is expired.</strong></p>
                                 </div>
                             </div>
                         </div>
@@ -142,7 +151,7 @@
                                                     </tr>
                                                     <tr class="check_postive">
                                                         <td>
-                                                            <strong>2). Is Patient is covid positive?</strong>
+                                                            <strong>2). Is Patient covid positive?</strong>
                                                         </td>
                                                     </tr>
                                                     <tr class="check_postive">
@@ -196,6 +205,10 @@
                             <h2>Scanned Appointment Details:</h2>
                         </t>
                         <table class="table">
+                            <tr>
+                                <td style="width:35%"><b>Appointment ID:</b></td>
+                                <td style="width:65%"><t t-esc="event_rec.event_name"/></td>
+                            </tr>
                             <tr>
                                 <td style="width:35%"><b>Patient Name:</b></td>
                                 <td style="width:65%"><t t-esc="event_rec.patient_partner_id.name"/></td>
