@@ -32,8 +32,16 @@
         </xpath>
         <xpath expr="//select[@name='country_id']" position="replace">
             <select name="country_id" class="form-control" required="1" id="country_field">
-                <t t-foreach="countries or []" t-as="country">
-                    <option t-att-value="country.id" t-att-data-phone-code="country.phone_code and ('+'+str(country.phone_code)+' ') or None" t-att-selected="country.code == 'NL'"><t t-esc="country.name"/></option>
+                <t t-if="'country_id' not in partner_data">
+                    <t t-foreach="countries or []" t-as="country">
+                        <option t-att-value="country.id" t-att-data-phone-code="country.phone_code and ('+'+str(country.phone_code)+' ') or None" t-att-selected="country.code == 'NL'"><t t-esc="country.name"/></option>
+                    </t>
+                </t>
+                <t t-else="">
+                    <t t-set="country_id" t-value="partner_data['country_id'][0]"/>
+                    <t t-foreach="countries or []" t-as="country">
+                        <option t-att-value="country.id" t-att-data-phone-code="country.phone_code and ('+'+str(country.phone_code)+' ') or None" t-att-selected="country.id == country_id"><t t-esc="country.name"/></option>
+                    </t>
                 </t>
             </select>
         </xpath>
@@ -52,7 +60,7 @@
             <div class="form-group row col-xl-8">
                 <label for="dob_datepicker" class="col-md-4 col-form-label">Date of Birth</label>
                 <div class="col-md-8">
-                    <input id="dob_datepicker_calendar_form" name="dob_datepicker" type="date" class="form-control o_website_form_input o_website_form_date"/>
+                    <input id="dob_datepicker_calendar_form" name="dob_datepicker" type="date" class="form-control o_website_form_input o_website_form_date" t-att-value="'dob' in partner_data and partner_data['dob']"/>
                 </div>
             </div>
         </xpath>

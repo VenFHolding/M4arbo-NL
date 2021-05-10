@@ -221,11 +221,11 @@ class CovidAppointments(http.Controller):
 
     @http.route(['/get_company_appointments'], auth='public', type='json', website=True)
     def get_company_appointments(self, data, **kw):
-        company_ref_ids = request.env['res.partner'].sudo().search([('ref', '=', data.get('company_ref'))], limit=1)
+        company_ref_id = request.env['res.partner'].sudo().search([('ref', '=', data.get('company_ref'))], limit=1)
         appointment_list = []
         user_rec = request.env.user
 
-        appointment_centre_ids = company_ref_ids.appointment_centre_ids.filtered(
+        appointment_centre_ids = company_ref_id.appointment_centre_ids.filtered(
             lambda app: app.is_published)
         
         is_test_center_user = False
@@ -233,8 +233,14 @@ class CovidAppointments(http.Controller):
             is_test_center_user = True
 
         if is_test_center_user:
-            appointment_centre_ids = company_ref_ids.appointment_centre_ids.filtered(
+            appointment_centre_ids = company_ref_id.appointment_centre_ids.filtered(
                 lambda app: app.user_id.id == user_rec.id)
+
+        if user_rec.has_group('base.group_portal'):
+            if user_rec.partner_id.company_type == 'person' and user_rec.partner_id.parent_id.id != company_ref_id.id:
+                return False
+            if user_rec.partner_id.company_type == 'company' and user_rec.partner_id.id != company_ref_id.id:
+                return False
 
         for rec in appointment_centre_ids:
             appointment_dict = {
@@ -371,7 +377,11 @@ class CustomWebsiteCalendar(WebsiteCalendar):  # Inherit in WebsiteCalendar clas
         """
         partner_data = {}
         if request.env.user.partner_id != request.env.ref('base.public_partner'):
-            partner_data = request.env.user.partner_id.read(fields=['name', 'mobile', 'country_id', 'email'])[0]
+            partner_data = request.env.user.partner_id.read(fields=['name', 'mobile', 'country_id', 'email', 'dob', 'phone'])[0]
+            if partner_data['dob']:
+                partner_data.update({
+                    'dob': str(partner_data['dob'])
+                })
         day_name = format_datetime(datetime.strptime(date_time, dtf), 'EEE', locale=get_lang(request.env).code)
         date_formated = format_datetime(datetime.strptime(date_time, dtf), locale=get_lang(request.env).code)
         countries_recs = request.env['res.country'].search([])

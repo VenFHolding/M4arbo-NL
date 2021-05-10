@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="portal_layout_inherited" inherit_id="portal.portal_layout" name="Portal Layout">
+		<xpath expr="//div[hasclass('o_portal_my_details')]" position="inside">
+			<p t-if="user_id.partner_id.dob"><b>DOB: </b> <span t-field="user_id.partner_id.dob"/></p>
+		</xpath>
+	</template>
+</odoo>
